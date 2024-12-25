@@ -18,6 +18,12 @@ const userSchema = new Schema(
             unique: true,
             lowecase: true,
             trim: true, 
+            validate: {
+                validator: function (value) {
+                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value); // Basic email regex
+                },
+                message: 'User:: {VALUE} is not a valid email!'
+            }
         },
         password: {
             type: String,
@@ -71,4 +77,38 @@ userSchema.methods.generateRefreshToken = function(){
     )
 }
 
-export const User = mongoose.model("User", userSchema)
+const tempUserSchema = new Schema({
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        index: true
+    },
+    username: {
+        type: String,
+        required: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    otp: {
+        type: String, 
+        required: true
+    },
+    otpExpiry: {
+        type: Date,
+        required: true,
+        default: () => new Date(Date.now() + 10 * 60 * 1000) // 10 minutes from now
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+        expires: 600 
+    }
+});
+
+const TempUser = mongoose.model('TempUser', tempUserSchema)
+const User = mongoose.model("User", userSchema)
+
+export{ User, TempUser }
