@@ -87,10 +87,9 @@ const verifyOTP = asyncHandler(async (req, res) => {
 
     const tempUser = await TempUser.findOne({ email });
 
-    if (!tempUser) {
+    if (!tempUser || tempUser.otpExpiry < new Date()) {
         throw new ApiError(400, "OTP expired or invalid email")
     }
-    console.log(tempUser.otp, otp);
     if (tempUser.otp.toString() !== otp.toString()) {
         tempUser.findByIdAndDelete(tempUser._id)
         throw new ApiError(400, "Invalid OTP");
@@ -188,6 +187,86 @@ const resendOTP = asyncHandler(async (req, res) => {
     } catch (error) {
         throw new ApiError(500, "Error sending OTP email")
     }
+})
+
+const forgotPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body
+
+    if (!email) {
+        throw new ApiError(400, "Email is required")
+    }
+
+    const user = await User.findOne({ email })
+
+    if (!user) {
+        throw new ApiError(404, "User not found")
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000)
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000)
+
+    // Create temporary OTP storage
+const tempOTPData = await TempUser.create({
+    email: user.email,
+    otp,
+    otpExpiry
+})
+
+    const msg = {
+        to: email,
+        from: process.env.VERIFIED_SENDER_EMAIL,
+        subject: "Password Reset OTP",
+        text: `Your OTP for password reset is: ${otp}. Valid for 10 minutes.`,
+        html: `
+            <h1>Password Reset OTP</h1>
+            <p>Your OTP for password reset is: <strong>${otp}</strong></p>
+            <p>This OTP is valid for 10 minutes.</p>
+        `
+    }
+
+    try {
+        await sgMail.send(msg)
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                { email },
+                "OTP sent successfully for password reset"
+            )
+        )
+    } catch (error) {
+        throw new ApiError(500, "Error sending OTP email")
+    }
+})
+
+const verifyResetPasswordOTP = asyncHandler(async (req, res) => {
+    const { email, otp, newPassword } = req.body
+
+    if (!email || !otp) {
+        throw new ApiError(400, "Email and OTP are required")
+    }
+
+    const tempOTPData = await TempUser.findOne({ email })
+
+    if (!tempOTPData || tempOTPData.otpExpiry < new Date()) {
+        throw new ApiError(400, "Invalid or expired OTP")
+    }
+
+    if (tempOTPData.otp.toString() !== otp.toString()) {
+        throw new ApiError(400, "Invalid OTP")
+    }
+
+    const user = await User.findOne({ email })
+    user.password = newPassword
+    user.save({ validateBeforeSave: false })
+    TempUser.findByIdAndDelete(tempOTPData._id)
+    
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            { email },
+            "password chaged successfully"
+        )
+    )
 })
 
 const loginUser = asyncHandler(async (req, res) =>{
@@ -317,25 +396,6 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 })
 
-const changeCurrentPassword = asyncHandler(async(req, res) => {
-    const {oldPassword, newPassword} = req.body
-
-    const user = await User.findById(req.user?._id)
-    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
-
-    if (!isPasswordCorrect) {
-        throw new ApiError(400, "Invalid old password")
-    }
-
-    user.password = newPassword
-    await user.save({validateBeforeSave: false})
-
-    return res
-    .status(200)
-    .json(new ApiResponse(200, {}, "Password changed successfully"))
-})
-
-
 const getCurrentUser = asyncHandler(async(req, res) => {
     return res
     .status(200)
@@ -389,10 +449,11 @@ export {
     registerUser,
     verifyOTP,
     resendOTP,
+    forgotPassword,
+    verifyResetPasswordOTP,
     loginUser,
     logoutUser,
     refreshAccessToken,
-    changeCurrentPassword,
     getCurrentUser,
     updateUserDetails
 }
