@@ -8,7 +8,6 @@ const userSchema = new Schema(
             type: String,
             required: true,
             unique: true,
-            lowercase: true,
             trim: true, 
             index: true
         },
@@ -85,12 +84,10 @@ const tempUserSchema = new Schema({
         index: true
     },
     username: {
-        type: String,
-        required: true
+        type: String
     },
     password: {
-        type: String,
-        required: true
+        type: String
     },
     otp: {
         type: String, 

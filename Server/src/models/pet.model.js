@@ -1,6 +1,4 @@
 import mongoose,{Schema} from 'mongoose';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 
 const petSchema = new Schema(
     {
@@ -50,3 +48,7 @@ const petSchema = new Schema(
         timestamp: true
     }
 )
+
+const Pet = mongoose.model('Pet', petSchema)
+
+export {Pet}
