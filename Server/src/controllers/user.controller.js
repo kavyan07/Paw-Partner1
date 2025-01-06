@@ -42,7 +42,6 @@ const registerUser = asyncHandler(async (req, res) => {
     await TempUser.findOneAndDelete({ email });
     const otp = String(Math.floor(100000 + Math.random() * 900000)) // 6-digit OTP
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
-    console.log(otp);
     const tempUser = await TempUser.create({
         email,
         username,
@@ -80,7 +79,6 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const verifyOTP = asyncHandler(async (req, res) => {
     const { email, otp} = req.body
-    console.log(otp);
     if (!email || !otp) {
         throw new ApiError(400, "Email and OTP are required")
     }
