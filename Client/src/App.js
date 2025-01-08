@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useHistory } from "react-router-dom";
+//import { useHistory } from "react-router-dom";
 import * as Components from "./Components";
 
 function App() {
-  const history = useHistory(); // Initialize useHistory hook
+  //const history = useHistory(); // Initialize useHistory hook
   const [signIn, toggleSignIn] = useState(true); // State to toggle between Sign In/Sign Up
   const [role, setRole] = useState("user"); // State to track the role (user, admin, pet shop, adoption center)
   const [formData, setFormData] = useState({
@@ -81,7 +81,7 @@ function App() {
     try {
       const response = await axios.post("http://localhost:8000/api/v1/users/login", formData);
       alert(response.data.message);
-      history.push("/home"); // Redirect to Home Page
+      //history.push("/home"); // Redirect to Home Page
     } catch (error) {
       alert(error.response.data.message);
     }
