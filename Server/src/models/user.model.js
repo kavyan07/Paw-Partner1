@@ -28,10 +28,22 @@ const userSchema = new Schema(
             type: String,
             required: [true, 'Password is required']
         },
+        address: {
+            type: String,
+            required: true
+        },
+        contact: {
+            type: String,
+            required: true
+        },
+        role: {
+            type: String,
+            enum: ["user", "shop owner", "adoption center", "admin"],
+            default: "user"
+        },
         refreshToken: {
             type: String
         }
-
     },
     {
         timestamps: true

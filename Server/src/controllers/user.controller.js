@@ -26,9 +26,9 @@ const generateAccessAndRefereshTokens = async(userId) =>{
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { email, username, password } = req.body
+    const { email, username, password, contact, address, role } = req.body
 
-    if ([email, username, password].some((field) => field?.trim() === "")) {
+    if ([email, username, password, contact, address, role].some((field) => field?.trim() === "")) {
         throw new ApiError(400, "All fields are required")
     }
 
@@ -46,6 +46,9 @@ const registerUser = asyncHandler(async (req, res) => {
         email,
         username,
         password,
+        contact,
+        address,
+        role,
         otp,
         otpExpiry
     })
@@ -97,7 +100,10 @@ const verifyOTP = asyncHandler(async (req, res) => {
     const user = await User.create({
         email: tempUser.email,
         username: tempUser.username,
-        password: tempUser.password
+        password: tempUser.password,
+        contact: tempUser.contact,
+        address: tempUser.address,
+        role: tempUser.role
     })
 
     // Delete temporary user
@@ -268,15 +274,8 @@ const verifyResetPasswordOTP = asyncHandler(async (req, res) => {
 })
 
 const loginUser = asyncHandler(async (req, res) =>{
-    // req body -> data
-    // username or email
-    //find the user
-    //password check
-    //access and referesh token
-    //send cookie
-
     const {email, username, password} = req.body
-    console.log(email);
+    //console.log(email);
 
     if (!username && !email) {
         throw new ApiError(400, "username or email is required")
@@ -313,7 +312,8 @@ const loginUser = asyncHandler(async (req, res) =>{
         new ApiResponse(
             200, 
             {
-                user: loggedInUser, accessToken, refreshToken
+                user: loggedInUser, 
+                role: loggedInUser.role
             },
             "User logged In Successfully"
         )
