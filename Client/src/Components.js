@@ -108,20 +108,29 @@ export const Anchor = styled.a`
   }
 `;
 
-export const RadioContainer = styled.div`
+export const ButtonGroup = styled.div`
   display: flex;
-  justify-content: space-around;
+  flex-wrap: wrap;
+  justify-content: space-between;
   width: 100%;
   margin-bottom: 20px;
 `;
 
-export const RadioLabel = styled.label`
-  font-size: 16px;
-  color: #555;
-`;
-
-export const RadioInput = styled.input`
-  margin-right: 8px;
+export const RoleButton = styled.button`
+  background-color: white;
+  color: ${(props) => (props.active ? "#ff4b2b" : "black")};
+  border: 2px solid black;
+  width: calc(50% - 10px); /* Two buttons per line with equal space */
+  height: 50px; /* Square shape */
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
   cursor: pointer;
-`;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  margin-bottom: 10px; /* Space between rows */
 
+  &:hover {
+    background-color: ${(props) => (props.active ? "#ff416c" : "#f0f0f0")};
+    color: ${(props) => (props.active ? "white" : "black")};
+  }
+`;
