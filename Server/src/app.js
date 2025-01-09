@@ -33,9 +33,13 @@ app.use(passport.session());
 //Routes import
 import userRouter from "./routes/user.routes.js"
 import petRouter from "./routes/pet.routes.js"
+import adoptionCenterRouter from "./routes/adoption-center.routes.js"
+import petShopRouter from "./routes/pet-shop.routes.js"
 
 //Routes declaration
 app.use("/api/v1/users", userRouter)
 app.use("/api/v1/pets", petRouter)
+app.use("/api/v1/adoption-center", adoptionCenterRouter)
+app.use("/api/v1/pet-shop", petShopRouter)
 
 export { app }

@@ -2,13 +2,13 @@ import mongoose, {Schema} from "mongoose";
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 
-const userSchema = new Schema(
+const shopSchema = new Schema(
     {
-        username: {
+        shopName: {
             type: String,
             required: true,
             unique: true,
-            trim: true, 
+            trim: true,
             index: true
         },
         email: {
@@ -19,9 +19,9 @@ const userSchema = new Schema(
             trim: true, 
             validate: {
                 validator: function (value) {
-                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value); // Basic email regex
+                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
                 },
-                message: 'User:: {VALUE} is not a valid email!'
+                message: 'Shop:: {VALUE} is not a valid email!'
             }
         },
         password: {
@@ -38,12 +38,8 @@ const userSchema = new Schema(
         },
         role: {
             type: String,
-            enum: ["user", "shop owner", "adoption center", "admin"],
-            default: "user"
-        },
-        googleId: {
-            type: String,
-            required: false
+            enum: ["customer", "shop owner", "veterinarian", "admin"],
+            default: "customer"
         },
         refreshToken: {
             type: String
@@ -54,24 +50,23 @@ const userSchema = new Schema(
     }
 )
 
-userSchema.pre("save", async function (next) {
+shopSchema.pre("save", async function (next) {
     if(!this.isModified("password")) return next();
 
     this.password = await bcrypt.hash(this.password, 10)
     next()
 })
 
-userSchema.methods.isPasswordCorrect = async function(password){
+shopSchema.methods.isPasswordCorrect = async function(password){
     return await bcrypt.compare(password, this.password)
 }
 
-userSchema.methods.generateAccessToken = function(){
+shopSchema.methods.generateAccessToken = function(){
     return jwt.sign(
         {
             _id: this._id,
             email: this.email,
-            username: this.username,
-            name: this.name
+            shopName: this.shopName
         },
         process.env.ACCESS_TOKEN_SECRET,
         {
@@ -79,7 +74,7 @@ userSchema.methods.generateAccessToken = function(){
         }
     )
 }
-userSchema.methods.generateRefreshToken = function(){
+shopSchema.methods.generateRefreshToken = function(){
     return jwt.sign(
         {
             _id: this._id,
@@ -92,14 +87,14 @@ userSchema.methods.generateRefreshToken = function(){
     )
 }
 
-const tempUserSchema = new Schema({
+const tempShopSchema = new Schema({
     email: {
         type: String,
         required: true,
         unique: true,
         index: true
     },
-    username: {
+    shopName: {
         type: String
     },
     password: {
@@ -113,8 +108,8 @@ const tempUserSchema = new Schema({
     },
     role: {
         type: String,
-        enum: ["user"],
-        default: "user"
+        enum: ["customer"],
+        default: "customer"
     },
     otp: {
         type: String, 
@@ -123,7 +118,7 @@ const tempUserSchema = new Schema({
     otpExpiry: {
         type: Date,
         required: true,
-        default: () => new Date(Date.now() + 10 * 60 * 1000) // 10 minutes from now
+        default: () => new Date(Date.now() + 10 * 60 * 1000)
     },
     createdAt: {
         type: Date,
@@ -132,7 +127,7 @@ const tempUserSchema = new Schema({
     }
 });
 
-const TempUser = mongoose.model('TempUser', tempUserSchema)
-const User = mongoose.model("User", userSchema)
+const TempShop = mongoose.model('TempShop', tempShopSchema)
+const Shop = mongoose.model("Shop", shopSchema)
 
-export{ User, TempUser }
+export{ Shop, TempShop }

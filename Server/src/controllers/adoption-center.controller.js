@@ -1,22 +1,21 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/ApiError.js"
-import { User} from "../models/user.model.js"
+import { AdoptionCenter } from "../models/adoptionCenter.model.js" 
 import sgMail from '@sendgrid/mail'
-import { TempUser} from "../models/user.model.js";
+import { TempAdoptionCenter } from "../models/adoptionCenter.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
 
-const generateAccessAndRefereshTokens = async(userId) =>{
+const generateAccessAndRefereshTokens = async(centerId) =>{
     try {
-        const user = await User.findById(userId)
-        const accessToken = user.generateAccessToken()
-        const refreshToken = user.generateRefreshToken()
+        const center = await AdoptionCenter.findById(centerId)
+        const accessToken = center.generateAccessToken()
+        const refreshToken = center.generateRefreshToken()
 
-        user.refreshToken = refreshToken
-        await user.save({ validateBeforeSave: false })
+        center.refreshToken = refreshToken
+        await center.save({ validateBeforeSave: false })
 
         return {accessToken, refreshToken}
-
 
     } catch (error) {
         throw new ApiError(500, "Something went wrong while generating referesh and access token")
@@ -25,26 +24,26 @@ const generateAccessAndRefereshTokens = async(userId) =>{
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
-const registerUser = asyncHandler(async (req, res) => {
-    const { email, username, password, contact, address, role } = req.body
+const registerAdoptionCenter = asyncHandler(async (req, res) => {
+    const { email, password, adoptionCenterName, address, contact, role } = req.body
 
-    if ([email, username, password, contact, address, role].some((field) => field?.trim() === "")) {
+    if ([email, password, adoptionCenterName, address, contact, role].some((field) => field?.trim() === "")) {
         throw new ApiError(400, "All fields are required")
     }
 
-    const existedUser = await User.findOne({
-        $or: [{ username }, { email }]
+    const existedCenter = await AdoptionCenter.findOne({
+        $or: [{ adoptionCenterName }, { email }]
     })
 
-    if (existedUser) {
-        throw new ApiError(409, "User with email or username already exists")
+    if (existedCenter) {
+        throw new ApiError(409, "Adoption center with email or name already exists")
     }
-    await TempUser.findOneAndDelete({ email });
+    await TempAdoptionCenter.findOneAndDelete({ email });
     const otp = String(Math.floor(100000 + Math.random() * 900000)) // 6-digit OTP
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
-    const tempUser = await TempUser.create({
+    const tempCenter = await TempAdoptionCenter.create({
         email,
-        username,
+        adoptionCenterName,
         password,
         contact,
         address,
@@ -75,7 +74,7 @@ const registerUser = asyncHandler(async (req, res) => {
             )
         )
     } catch (error) {
-        await TempUser.findByIdAndDelete(tempUser._id)
+        await TempAdoptionCenter.findByIdAndDelete(tempCenter._id)
         throw new ApiError(500, "Error sending OTP email")
     }
 })
@@ -86,39 +85,39 @@ const verifyOTP = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Email and OTP are required")
     }
 
-    const tempUser = await TempUser.findOne({ email });
+    const tempCenter = await TempAdoptionCenter.findOne({ email });
 
-    if (!tempUser || tempUser.otpExpiry < new Date()) {
+    if (!tempCenter || tempCenter.otpExpiry < new Date()) {
         throw new ApiError(400, "OTP expired or invalid email")
     }
-    if (tempUser.otp.toString() !== otp.toString()) {
-        tempUser.findByIdAndDelete(tempUser._id)
+    if (tempCenter.otp.toString() !== otp.toString()) {
+        tempCenter.findByIdAndDelete(tempCenter._id)
         throw new ApiError(400, "Invalid OTP");
     }
 
-    // Create actual user
-    const user = await User.create({
-        email: tempUser.email,
-        username: tempUser.username,
-        password: tempUser.password,
-        contact: tempUser.contact,
-        address: tempUser.address,
-        role: tempUser.role
+    // Create actual adoption center
+    const center = await AdoptionCenter.create({
+        email: tempCenter.email,
+        adoptionCenterName: tempCenter.adoptionCenterName,
+        password: tempCenter.password,
+        contact: tempCenter.contact,
+        address: tempCenter.address,
+        role: tempCenter.role
     })
 
-    // Delete temporary user
-    await TempUser.findByIdAndDelete(tempUser._id)
+    // Delete temporary center
+    await TempAdoptionCenter.findByIdAndDelete(tempCenter._id)
 
     // Generate tokens
-    const accessToken = user.generateAccessToken()
-    const refreshToken = user.generateRefreshToken()
+    const accessToken = center.generateAccessToken()
+    const refreshToken = center.generateRefreshToken()
 
-    // Update user with refresh token
-    user.refreshToken = refreshToken
-    await user.save({validateBeforeSave: false})
+    // Update center with refresh token
+    center.refreshToken = refreshToken
+    await center.save({validateBeforeSave: false})
 
-    // Get user without sensitive info
-    const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
+    // Get center without sensitive info
+    const loggedInCenter = await AdoptionCenter.findById(center._id).select("-password -refreshToken")
 
     // Set cookies
     const options = {
@@ -135,11 +134,11 @@ const verifyOTP = asyncHandler(async (req, res) => {
             new ApiResponse(
                 200,
                 {
-                    user: loggedInUser,
+                    center: loggedInCenter,
                     accessToken,
                     refreshToken
                 },
-                "User registered successfully"
+                "Adoption center registered successfully"
             )
         )
 })
@@ -152,9 +151,9 @@ const resendOTP = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Email is required")
     }
 
-    const tempUser = await TempUser.findOne({ email })
+    const tempCenter = await TempAdoptionCenter.findOne({ email })
 
-    if (!tempUser) {
+    if (!tempCenter) {
         throw new ApiError(404, "No pending registration found for this email")
     }
 
@@ -162,10 +161,10 @@ const resendOTP = asyncHandler(async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000)
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000)
 
-    // Update temporary user with new OTP
-    tempUser.otp = otp
-    tempUser.otpExpiry = otpExpiry
-    await tempUser.save()
+    // Update temporary center with new OTP
+    tempCenter.otp = otp
+    tempCenter.otpExpiry = otpExpiry
+    await tempCenter.save()
 
     const msg = {
         to: email,
@@ -200,21 +199,21 @@ const forgotPassword = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Email is required")
     }
 
-    const user = await User.findOne({ email })
+    const center = await AdoptionCenter.findOne({ email })
 
-    if (!user) {
-        throw new ApiError(404, "User not found")
+    if (!center) {
+        throw new ApiError(404, "Adoption center not found")
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000)
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000)
 
     // Create temporary OTP storage
-const tempOTPData = await TempUser.create({
-    email: user.email,
-    otp,
-    otpExpiry
-})
+    const tempOTPData = await TempAdoptionCenter.create({
+        email: center.email,
+        otp,
+        otpExpiry
+    })
 
     const msg = {
         to: email,
@@ -249,7 +248,7 @@ const verifyResetPasswordOTP = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Email and OTP are required")
     }
 
-    const tempOTPData = await TempUser.findOne({ email })
+    const tempOTPData = await TempAdoptionCenter.findOne({ email })
 
     if (!tempOTPData || tempOTPData.otpExpiry < new Date()) {
         throw new ApiError(400, "Invalid or expired OTP")
@@ -259,70 +258,68 @@ const verifyResetPasswordOTP = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid OTP")
     }
 
-    const user = await User.findOne({ email })
-    user.password = newPassword
-    user.save({ validateBeforeSave: false })
-    TempUser.findByIdAndDelete(tempOTPData._id)
+    const center = await AdoptionCenter.findOne({ email })
+    center.password = newPassword
+    center.save({ validateBeforeSave: false })
+    TempAdoptionCenter.findByIdAndDelete(tempOTPData._id)
     
     return res.status(200).json(
         new ApiResponse(
             200,
             { email },
-            "password chaged successfully"
+            "password changed successfully"
         )
     )
 })
 
-const loginUser = asyncHandler(async (req, res) =>{
-    const {email, username, password} = req.body
-    //console.log(email);
+const loginAdoptionCenter = asyncHandler(async (req, res) =>{
+    const {email, adoptionCenterName, password} = req.body
 
-    if (!username && !email) {
-        throw new ApiError(400, "username or email is required")
+    if (!adoptionCenterName && !email) {
+        throw new ApiError(400, "name or email is required")
     }
 
-    const user = await User.findOne({
-        $or: [{username}, {email}]
+    const center = await AdoptionCenter.findOne({
+        $or: [{adoptionCenterName}, {email}]
     })
 
-    if (!user) {
-        throw new ApiError(404, "User does not exist")
+    if (!center) {
+        throw new ApiError(404, "Adoption center does not exist")
     }
 
-   const isPasswordValid = await user.isPasswordCorrect(password)
+   const isPasswordValid = await center.isPasswordCorrect(password)
 
    if (!isPasswordValid) {
-    throw new ApiError(401, "Invalid user credentials")
-    }
+    throw new ApiError(401, "Invalid credentials")
+   }
 
-   const {accessToken, refreshToken} = await generateAccessAndRefereshTokens(user._id)
+   const {accessToken, refreshToken} = await generateAccessAndRefereshTokens(center._id)
 
-    const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
+   const loggedInCenter = await AdoptionCenter.findById(center._id).select("-password -refreshToken")
+   const options = {
+    httpOnly: true,
+    secure: true
+   }
 
-    const options = {
-        httpOnly: true,
-        secure: true
-    }
-
-    return res
+   return res
     .status(200)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
     .json(
         new ApiResponse(
-            200, 
+            200,
             {
-                user: loggedInUser, 
-                role: loggedInUser.role
+                center: loggedInCenter,
+                accessToken,
+                refreshToken
             },
-            "User logged In Successfully"
+            "Adoption center logged in successfully"
         )
     )
 })
-
-const logoutUser = asyncHandler(async(req, res) => {
-    await User.findByIdAndUpdate(
-        req.user._id,
+const logoutAdoptionCenter = asyncHandler(async(req, res) => {
+    await AdoptionCenter.findByIdAndUpdate(
+        req.center._id,
         {
             $unset: {
                 refreshToken: 1 // this removes the field from document
@@ -342,7 +339,7 @@ const logoutUser = asyncHandler(async(req, res) => {
     .status(200)
     .clearCookie("accessToken", options)
     .clearCookie("refreshToken", options)
-    .json(new ApiResponse(200, {}, "User logged Out"))
+    .json(new ApiResponse(200, {}, "Adoption center logged Out"))
 })
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -358,15 +355,14 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             process.env.REFRESH_TOKEN_SECRET
         )
     
-        const user = await User.findById(decodedToken?._id)
+        const center = await AdoptionCenter.findById(decodedToken?._id)
     
-        if (!user) {
+        if (!center) {
             throw new ApiError(401, "Invalid refresh token")
         }
     
-        if (incomingRefreshToken !== user?.refreshToken) {
+        if (incomingRefreshToken !== center?.refreshToken) {
             throw new ApiError(401, "Refresh token is expired or used")
-            
         }
     
         const options = {
@@ -374,7 +370,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             secure: true
         }
     
-        const {accessToken, newRefreshToken} = await generateAccessAndRefereshTokens(user._id)
+        const {accessToken, newRefreshToken} = await generateAccessAndRefereshTokens(center._id)
     
         return res
         .status(200)
@@ -393,66 +389,68 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 })
 
-const getCurrentUser = asyncHandler(async(req, res) => {
+const getAdoptionCenter = asyncHandler(async (req, res) => {
     return res
     .status(200)
     .json(new ApiResponse(
         200,
-        req.user,
-        "User fetched successfully"
+        req.center,
+        "Adoption center fetched successfully"
     ))
 })
 
-const updateUserDetails = asyncHandler(async(req, res) => {
-    const {username, email, address, contact} = req.body
+const updateAdoptionCenter = asyncHandler(async (req, res) => {
+    const {adoptionCenterName, contact, address, email} = req.body
 
-    if (!username || !email) {
+    if (!adoptionCenterName || !contact || !address || !email) {
         throw new ApiError(400, "All fields are required")
     }
 
-    // Check if username or email already exists for other users
-    const existingUser = await User.findOne({
+    const existingCenter = await AdoptionCenter.findOne({
         $and: [
-            { _id: { $ne: req.user?._id } }, // Exclude current user
+            { _id: { $ne: req.center?._id } }, // Exclude current user
             { $or: [
-                { username: username.toLowerCase() },
+                { adoptionCenterName: adoptionCenterName.toLowerCase() },
                 { email: email }
             ]}
         ]
     });
 
-    if (existingUser) {
-        throw new ApiError(409, "Username or email already taken by another user")
+    if (existingCenter) {
+        throw new ApiError(409, "Adoption center with name or email already exists")
     }
 
-    const user = await User.findByIdAndUpdate(
-        req.user?._id,
+    const center = await AdoptionCenter.findByIdAndUpdate(
+        req.center?._id,
         {
             $set: {
-                username: username.toLowerCase(),
-                email: email,
-                address: address,
-                contact: contact
+                adoptionCenterName,
+                email,
+                contact,
+                address
             }
         },
         {new: true}
-        
     ).select("-password")
 
     return res
     .status(200)
-    .json(new ApiResponse(200, user, "Account details updated successfully"))
-});
+    .json(new ApiResponse(
+        200,
+        center,
+        "Adoption center updated successfully"
+    ))
+})
 
 export {
-    registerUser,
+    registerAdoptionCenter,
     verifyOTP,
     resendOTP,
     forgotPassword,
     verifyResetPasswordOTP,
-    loginUser,
-    logoutUser,
+    loginAdoptionCenter,
+    logoutAdoptionCenter,
     refreshAccessToken,
-    getCurrentUser,
-    updateUserDetails
+    getAdoptionCenter,
+    updateAdoptionCenter
 }
