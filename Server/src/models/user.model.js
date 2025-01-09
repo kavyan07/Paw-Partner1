@@ -41,6 +41,10 @@ const userSchema = new Schema(
             enum: ["user", "shop owner", "adoption center", "admin"],
             default: "user"
         },
+        googleId: {
+            type: String,
+            required: false
+        },
         refreshToken: {
             type: String
         }
@@ -100,6 +104,17 @@ const tempUserSchema = new Schema({
     },
     password: {
         type: String
+    },
+    address: {
+        type: String
+    },
+    contact: {
+        type: String
+    },
+    role: {
+        type: String,
+        enum: ["user", "shop owner", "adoption center", "admin"],
+        default: "user"
     },
     otp: {
         type: String, 

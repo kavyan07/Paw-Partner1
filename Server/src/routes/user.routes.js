@@ -12,6 +12,7 @@ import {
     updateUserDetails
 } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
+import * as passport from 'passport';
 
 const router = Router()
 
@@ -22,6 +23,12 @@ router.route("/verify-reset-password-otp").post(verifyResetPasswordOTP)
 router.route("/refresh-token").post(refreshAccessToken)
 router.route("/verify-otp").post(verifyOTP)
 router.route("/resend-otp").post(resendOTP)
+
+//google auth
+router.get('/auth/google', passport.default.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/auth/google/callback', passport.default.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
+    res.redirect('/');
+});
 
 //secured routes
 router.route("/logout").post(verifyJWT,  logoutUser)
