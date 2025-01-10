@@ -1,21 +1,21 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { Pet } from "../models/pet.model.js";
+import { OwnedPet } from "../models/owned-pet.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { unlink } from "node:fs/promises";
 
 
-const addPet = asyncHandler(async (req, res) => {
-    const { petName, petType, breed, age, gender, description } = req.body;
+const addOwnedPet = asyncHandler(async (req, res) => {
+    const { name, type, breed, age, gender, description } = req.body;
+    const owner = req.user._id;
     if(!req.file) {
         throw new ApiError(400, "Please upload a image file");
     }
     if (!req.user) {
         throw new ApiError(401, "Unauthorized - User not authenticated");
     }
-    const owner = req.user._id;
-    if (!petName || !petType || !breed || !age || !gender || !description) {
+    if (!name || !type || !breed || !age || !gender || !description) {
         throw new ApiError(400, "All fields are required");
     }
     // Add file size validation
@@ -27,14 +27,14 @@ const addPet = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Failed to upload image");
     }
 
-    const pet = await Pet.create({
-        petName,
-        petType,
+    const pet = await OwnedPet.create({
+        name,
+        type,
         breed,
         age,
         gender,
         description,
-        image: imageUrl,
+        imageUrl: imageUrl,
         owner
     });
 
@@ -43,11 +43,11 @@ const addPet = asyncHandler(async (req, res) => {
     );
 });
 
-const updatePet = asyncHandler(async (req, res) => {
-    const { petName, petType, breed, age, gender, description } = req.body;
+const updateOwnedPet = asyncHandler(async (req, res) => {
+    const { name, type, breed, age, gender, description } = req.body;
     const petId = req.params._id;
 
-    const pet = await Pet.findById(petId);
+    const pet = await OwnedPet.findById(petId);
     if (!pet) {
         throw new ApiError(404, "Pet not found");
     }
@@ -56,9 +56,9 @@ const updatePet = asyncHandler(async (req, res) => {
         throw new ApiError(403, "Unauthorized");
     }
 
-    const updatedPet = await Pet.findByIdAndUpdate(petId, {
-        petName,
-        petType,
+    const updatedPet = await OwnedPet.findByIdAndUpdate(petId, {
+        name,
+        type,
         breed,
         age,
         gender,
@@ -70,16 +70,16 @@ const updatePet = asyncHandler(async (req, res) => {
     );
 });
 
-const getPets = asyncHandler(async (req, res) => {
-    const pets = await Pet.find({ owner: req.user._id });
+const getOwnedPets = asyncHandler(async (req, res) => {
+    const pets = await OwnedPet.find({ owner: req.user._id });
     return res.status(200).json(
         new ApiResponse(200, pets, "Pets fetched successfully")
     );
 });
 
-const deletePet = asyncHandler(async (req, res) => {
+const deleteOwnedPet = asyncHandler(async (req, res) => {
     const petId = req.params._id;
-    const pet = await Pet.findById(petId);
+    const pet = await OwnedPet.findById(petId);
     if (!pet) {
         throw new ApiError(404, "Pet not found");
     }
@@ -88,12 +88,17 @@ const deletePet = asyncHandler(async (req, res) => {
         throw new ApiError(403, "Unauthorized");
     }
 
-    await Pet.findByIdAndDelete(petId);
+    await OwnedPet.findByIdAndDelete(petId);
 
     return res.status(200).json(
         new ApiResponse(200, {}, "Pet deleted successfully")
     );
 });
 
-export { addPet, updatePet, getPets, deletePet };
+export {
+    addOwnedPet,
+    updateOwnedPet,
+    getOwnedPets,
+    deleteOwnedPet
+};
 
