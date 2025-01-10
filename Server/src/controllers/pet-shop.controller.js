@@ -1,8 +1,8 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/ApiError.js"
-import { Shop } from "../models/shop.model.js"
+import { Shop } from "../models/pet-shop.model.js"
 import sgMail from '@sendgrid/mail'
-import { TempShop } from "../models/shop.model.js";
+import { TempShop } from "../models/pet-shop.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
 

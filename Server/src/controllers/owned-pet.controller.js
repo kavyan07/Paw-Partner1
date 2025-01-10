@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { OwnedPet } from "../models/owned-pet.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { deleteFromCloudinary } from "../utils/cloudinary.js";
 import { unlink } from "node:fs/promises";
 
 
@@ -46,8 +47,6 @@ const addOwnedPet = asyncHandler(async (req, res) => {
 const updateOwnedPet = asyncHandler(async (req, res) => {
     const { name, type, breed, age, gender, description } = req.body;
     const petId = req.params._id;
-
-    const pet = await OwnedPet.findById(petId);
     if (!pet) {
         throw new ApiError(404, "Pet not found");
     }
@@ -56,14 +55,19 @@ const updateOwnedPet = asyncHandler(async (req, res) => {
         throw new ApiError(403, "Unauthorized");
     }
 
-    const updatedPet = await OwnedPet.findByIdAndUpdate(petId, {
-        name,
-        type,
-        breed,
-        age,
-        gender,
-        description
-    }, { new: true });
+    const updates = {};
+    if (name) updates.name = name;
+    if (type) updates.type = type;
+    if (breed) updates.breed = breed;
+    if (age) updates.age = age;
+    if (gender) updates.gender = gender;
+    if (description) updates.description = description;
+
+    const updatedPet = await OwnedPet.findByIdAndUpdate(
+        petId,
+        { $set: updates },
+        { new: true, runValidators: true }
+    );
 
     return res.status(200).json(
         new ApiResponse(200, updatedPet, "Pet updated successfully")
@@ -88,6 +92,7 @@ const deleteOwnedPet = asyncHandler(async (req, res) => {
         throw new ApiError(403, "Unauthorized");
     }
 
+    await deleteFromCloudinary(pet.imageUrl);
     await OwnedPet.findByIdAndDelete(petId);
 
     return res.status(200).json(

@@ -40,4 +40,4 @@ const adoptionCenterPetSchema = new mongoose.Schema({
 
 const AdoptionCenterPet = mongoose.model("AdoptionCenterPet", adoptionCenterPetSchema);
 
-export default AdoptionCenterPet;
+export { AdoptionCenterPet };

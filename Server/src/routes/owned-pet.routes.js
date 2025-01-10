@@ -10,7 +10,7 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.route("/add").post(verifyJWT,upload.single('petImage'),addOwnedPet)
+router.route("/add").post(verifyJWT,upload.single('image'),addOwnedPet)
 router.route("/update/:_id").patch(verifyJWT,updateOwnedPet)
 router.route("/delete/:_id").delete(verifyJWT,deleteOwnedPet)
 router.route("/").get(verifyJWT, getOwnedPets)

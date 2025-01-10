@@ -46,4 +46,4 @@ const ownedPetSchema = new Schema(
 
 const OwnedPet = mongoose.model('OwnedPet', ownedPetSchema)
 
-export default OwnedPet;
+export {OwnedPet}

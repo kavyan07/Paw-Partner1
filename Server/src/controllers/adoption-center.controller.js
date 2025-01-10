@@ -1,8 +1,8 @@
  import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/ApiError.js"
-import { AdoptionCenter } from "../models/adoptionCenter.model.js" 
+import { AdoptionCenter } from "../models/adoption-center.model.js" 
 import sgMail from '@sendgrid/mail'
-import { TempAdoptionCenter } from "../models/adoptionCenter.model.js";
+import { TempAdoptionCenter } from "../models/adoption-center.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
 
