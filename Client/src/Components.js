@@ -1,8 +1,8 @@
 import styled from "styled-components";
 import BackgroundImage from "./animal-background.jpg"; // Path to your background image
 
-// General Reset
-export const Background = styled.div`
+// Background with image for SignIn and SignUp pages
+export const BackgroundWithImage = styled.div`
   background-image: url(${BackgroundImage});
   background-size: cover;
   background-position: center;
@@ -19,6 +19,7 @@ export const Background = styled.div`
   }
 `;
 
+// General container for forms
 export const Container = styled.div`
   background-color: #ffffff;
   border-radius: 10px;
