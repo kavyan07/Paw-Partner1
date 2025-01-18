@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styled from 'styled-components';
+import { Plus, X } from 'lucide-react';
 
 const ProfileContainer = styled.div`
   padding: 2rem;
@@ -129,6 +130,22 @@ const ModalContent = styled.div`
   border-radius: 20px;
   width: 90%;
   max-width: 500px;
+  position: relative;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  
+  &:hover {
+    color: #FF5252;
+  }
 `;
 
 const Form = styled.form`
@@ -194,7 +211,10 @@ function PetProfile() {
   });
 
   useEffect(() => {
-    const fetchPets = async () => {
+    fetchPets();
+  }, []);
+
+  const fetchPets = async () => {
     try {
       const response = await axios.get('http://localhost:8000/api/v1/owned-pets/', {
         withCredentials: true
@@ -204,8 +224,6 @@ function PetProfile() {
       setError(error.response?.data?.message || 'Failed to fetch pets');
     }
   };
-    fetchPets();
-  }, []);
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
@@ -218,7 +236,6 @@ function PetProfile() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
     const formDataToSend = new FormData();
     
     Object.keys(formData).forEach(key => {
@@ -297,14 +314,14 @@ function PetProfile() {
             image: null
           });
         }}>
-          <span style={{ fontSize: '3rem', color: '#FF6B6B' }}>+</span>
+          <Plus size={32} color="#FF6B6B" />
           <p>Add New Pet</p>
         </AddPetCard>
         
         {pets.map(pet => (
           <PetCard key={pet._id}>
             <PetImage>
-              <img src={pet.imageUrl} alt={pet.name} />
+              <img src={pet.imageUrl || "/placeholder.svg"} alt={pet.name} />
             </PetImage>
             <PetInfo>
               <PetName>{pet.name}</PetName>
@@ -335,6 +352,13 @@ function PetProfile() {
       {isModalOpen && (
         <Modal>
           <ModalContent>
+            <CloseButton onClick={() => {
+              setIsModalOpen(false);
+              setEditingPet(null);
+              setError('');
+            }}>
+              <X />
+            </CloseButton>
             <h2>{editingPet ? 'Edit Pet' : 'Add New Pet'}</h2>
             <Form onSubmit={handleSubmit}>
               <Input
@@ -351,6 +375,7 @@ function PetProfile() {
                 onChange={handleInputChange}
                 required
               >
+                <option value="">Select pet type</option>
                 <option value="Dog">Dog</option>
                 <option value="Cat">Cat</option>
                 <option value="Bird">Bird</option>
@@ -379,6 +404,7 @@ function PetProfile() {
                 onChange={handleInputChange}
                 required
               >
+                <option value="">Select gender</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
               </Select>
@@ -417,3 +443,4 @@ function PetProfile() {
 }
 
 export default PetProfile;
+
