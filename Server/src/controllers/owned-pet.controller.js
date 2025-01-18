@@ -47,6 +47,8 @@ const addOwnedPet = asyncHandler(async (req, res) => {
 const updateOwnedPet = asyncHandler(async (req, res) => {
     const { name, type, breed, age, gender, description } = req.body;
     const petId = req.params._id;
+    console.log(req.body, petId);
+    const pet = await OwnedPet.findById(petId);
     if (!pet) {
         throw new ApiError(404, "Pet not found");
     }
