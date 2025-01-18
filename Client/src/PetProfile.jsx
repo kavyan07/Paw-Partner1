@@ -185,29 +185,27 @@ function PetProfile() {
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
-    type: 'Dog',
+    type: '',
     breed: '',
     age: '',
-    gender: 'Male',
+    gender: '',
     description: '',
     image: null
   });
 
   useEffect(() => {
-    fetchPets();
-  }, []);
-
-  const fetchPets = async () => {
+    const fetchPets = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:8000/api/v1/owned-pets', {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await axios.get('http://localhost:8000/api/v1/owned-pets/', {
+        withCredentials: true
       });
       setPets(response.data.data);
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to fetch pets');
     }
   };
+    fetchPets();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
@@ -237,10 +235,8 @@ function PetProfile() {
           `http://localhost:8000/api/v1/owned-pets/update/${editingPet._id}`,
           formDataToSend,
           { 
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data'
-            } 
+            headers: {'Content-Type': 'multipart/form-data'}, 
+            withCredentials: true
           }
         );
       } else {
@@ -248,10 +244,8 @@ function PetProfile() {
           'http://localhost:8000/api/v1/owned-pets/add',
           formDataToSend,
           { 
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data'
-            } 
+            headers: {'Content-Type': 'multipart/form-data'},
+            withCredentials: true
           }
         );
       }
@@ -260,10 +254,10 @@ function PetProfile() {
       setEditingPet(null);
       setFormData({
         name: '',
-        type: 'Dog',
+        type: '',
         breed: '',
         age: '',
-        gender: 'Male',
+        gender: '',
         description: '',
         image: null
       });
@@ -275,9 +269,8 @@ function PetProfile() {
   const handleDelete = async (petId) => {
     if (window.confirm('Are you sure you want to delete this pet?')) {
       try {
-        const token = localStorage.getItem('token');
         await axios.delete(`http://localhost:8000/api/v1/owned-pets/delete/${petId}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          withCredentials: true
         });
         fetchPets();
       } catch (error) {
@@ -296,10 +289,10 @@ function PetProfile() {
           setEditingPet(null);
           setFormData({
             name: '',
-            type: 'Dog',
+            type: '',
             breed: '',
             age: '',
-            gender: 'Male',
+            gender: '',
             description: '',
             image: null
           });

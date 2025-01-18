@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
@@ -153,9 +154,9 @@ function SignIn() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:8000/api/v1/users/login", formData);
-      localStorage.setItem("token", response.data.token);
-      alert(response.data.message);
+      const response = await axios.post("http://localhost:8000/api/v1/users/login", formData, { withCredentials: true });
+      Cookies.set('accessToken', response.data.accessToken, { expires: 1, secure: true, sameSite: 'strict' });
+      Cookies.set('refreshToken', response.data.refreshToken, { expires: 7, secure: true, sameSite: 'strict' });
       navigate('/home');
     } catch (error) {
       setError(error.response?.data?.message || "An error occurred");
