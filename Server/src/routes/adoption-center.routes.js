@@ -9,12 +9,13 @@ import {
     logoutAdoptionCenter,
     refreshAccessToken,
     getAdoptionCenter,
-    updateAdoptionCenter
+    updateAdoptionCenter,
+    allAdoptionCenters
 } from "../controllers/adoption-center.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
-
+router.route("/").get(allAdoptionCenters);
 router.route("/register").post(registerAdoptionCenter);
 router.route("/verify-otp").post(verifyOTP);
 router.route("/resend-otp").post(resendOTP);

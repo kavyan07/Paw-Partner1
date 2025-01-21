@@ -50,7 +50,7 @@ const updateAdoptionCenterPet = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Pet not found");
     }
 
-    if (pet.owner.toString() !== req.user._id.toString()) {
+    if (pet.adoptionCenter.toString() !== req.user._id.toString()) {
         throw new ApiError(403, "Unauthorized");
     }
 
@@ -69,7 +69,8 @@ const updateAdoptionCenterPet = asyncHandler(async (req, res) => {
 });
 
 const getAdoptionCenterPets = asyncHandler(async (req, res) => {
-    const pets = await AdoptionCenterPet.find({ adoptionCenter: req.user._id });
+    const { centerId } = req.params;
+    const pets = await AdoptionCenterPet.find({ adoptionCenter: centerId });
     return res.status(200).json(
         new ApiResponse(200, pets, "Pets fetched successfully")
     );

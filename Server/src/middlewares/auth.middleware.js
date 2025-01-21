@@ -3,7 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
 
-export const verifyJWT = asyncHandler(async (req, _, next) => {
+const verifyJWT = asyncHandler(async (req, _, next) => {
     try {
         const token = req.cookies?.accessToken;
 
@@ -34,3 +34,14 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
         throw new ApiError(401, error?.message || "Invalid access token");
     }
 });
+
+const checkRole = (roles) => {
+    return (req, res, next) => {
+        if (!roles.includes(req.user.role)) {
+            throw new ApiError(403, "You are not authorized to perform this action");
+        }
+        next();
+    };
+};
+
+export { verifyJWT, checkRole };

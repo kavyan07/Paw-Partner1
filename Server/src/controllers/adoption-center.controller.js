@@ -442,6 +442,13 @@ const updateAdoptionCenter = asyncHandler(async (req, res) => {
     ))
 })
 
+const allAdoptionCenters = asyncHandler(async (req, res) => {
+    const centers = await AdoptionCenter.find();
+    return res.status(200).json(
+        new ApiResponse(200, centers, "All adoption centers fetched successfully")
+    );
+});
+
 export {
     registerAdoptionCenter,
     verifyOTP,
@@ -452,5 +459,6 @@ export {
     logoutAdoptionCenter,
     refreshAccessToken,
     getAdoptionCenter,
-    updateAdoptionCenter
+    updateAdoptionCenter,
+    allAdoptionCenters
 }
