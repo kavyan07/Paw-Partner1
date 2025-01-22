@@ -1,11 +1,23 @@
-import React from 'react';
-import styled from 'styled-components';
-import { Link, useNavigate } from 'react-router-dom';
-import { PawPrint, Heart, Clock, Moon, ShoppingBag, Stethoscope, Star, Quote } from 'lucide-react';
+import React from "react"
+import styled from "styled-components"
+import { Link, useNavigate } from "react-router-dom"
+import {
+  PawPrint,
+  Heart,
+  Clock,
+  Moon,
+  ShoppingBag,
+  Stethoscope,
+  Star,
+  Store,
+  Users,
+  ArrowRight,
+  HomeIcon,
+} from "lucide-react"
 
 const HomeContainer = styled.div`
   min-height: 100vh;
-`;
+`
 
 const Hero = styled.div`
   background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
@@ -18,12 +30,12 @@ const Hero = styled.div`
   justify-content: center;
   text-align: center;
   color: white;
-`;
+`
 
 const HeroContent = styled.div`
   max-width: 800px;
   padding: 20px;
-`;
+`
 
 const HeroTitle = styled.h1`
   font-size: 4rem;
@@ -34,7 +46,7 @@ const HeroTitle = styled.h1`
   @media (max-width: 768px) {
     font-size: 3rem;
   }
-`;
+`
 
 const HeroSubtitle = styled.p`
   font-size: 1.5rem;
@@ -44,30 +56,31 @@ const HeroSubtitle = styled.p`
   @media (max-width: 768px) {
     font-size: 1.2rem;
   }
-`;
+`
 
 const Button = styled(Link)`
   background: #FF6B6B;
   color: white;
   text-decoration: none;
-  padding: 15px 30px;
+  padding: 12px 24px;
   border-radius: 50px;
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 600;
   transition: all 0.3s ease;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  display: inline-block;
 
   &:hover {
     background: #FF5252;
     transform: translateY(-2px);
     box-shadow: 0 6px 8px rgba(0,0,0,0.15);
   }
-`;
+`
 
 const ServicesSection = styled.section`
   padding: 100px 20px;
   background: #f8f9fa;
-`;
+`
 
 const SectionTitle = styled.h2`
   text-align: center;
@@ -84,7 +97,7 @@ const SectionTitle = styled.h2`
     background: #FF6B6B;
     margin: 20px auto 0;
   }
-`;
+`
 
 const ServicesGrid = styled.div`
   display: grid;
@@ -92,7 +105,7 @@ const ServicesGrid = styled.div`
   gap: 30px;
   max-width: 1200px;
   margin: 0 auto;
-`;
+`
 
 const ServiceCard = styled.div`
   background: white;
@@ -113,25 +126,25 @@ const ServiceCard = styled.div`
     color: #FF6B6B;
     margin-bottom: 20px;
   }
-`;
+`
 
 const ServiceTitle = styled.h3`
   font-size: 1.5rem;
   margin-bottom: 15px;
   color: #333;
-`;
+`
 
 const ServiceDescription = styled.p`
   color: #666;
   line-height: 1.6;
-`;
+`
 
 const InfoSection = styled.section`
   padding: 100px 20px;
   background: #FF6B6B;
   color: white;
   text-align: center;
-`;
+`
 
 const InfoText = styled.p`
   max-width: 800px;
@@ -149,12 +162,12 @@ const InfoText = styled.p`
       color: #FFD3D3;
     }
   }
-`;
+`
 
 const ReviewsSection = styled.section`
   padding: 100px 20px;
   background: #f8f9fa;
-`;
+`
 
 const ReviewsGrid = styled.div`
   display: grid;
@@ -162,7 +175,7 @@ const ReviewsGrid = styled.div`
   gap: 30px;
   max-width: 1200px;
   margin: 0 auto;
-`;
+`
 
 const ReviewCard = styled.div`
   background: white;
@@ -181,20 +194,20 @@ const ReviewCard = styled.div`
     opacity: 0.2;
     font-family: serif;
   }
-`;
+`
 
 const ReviewText = styled.p`
   color: #666;
   line-height: 1.8;
   margin-bottom: 20px;
   font-style: italic;
-`;
+`
 
 const ReviewAuthor = styled.div`
   display: flex;
   align-items: center;
   gap: 15px;
-`;
+`
 
 const AuthorImage = styled.div`
   width: 50px;
@@ -205,94 +218,146 @@ const AuthorImage = styled.div`
   align-items: center;
   justify-content: center;
   color: white;
-`;
+`
 
 const AuthorInfo = styled.div`
   display: flex;
   flex-direction: column;
-`;
+`
 
 const AuthorName = styled.span`
   font-weight: 600;
   color: #333;
-`;
+`
 
 const AuthorRole = styled.span`
   font-size: 0.9rem;
   color: #666;
-`;
+`
 
 const Stars = styled.div`
   color: #FFD700;
   display: flex;
   gap: 2px;
   margin-bottom: 10px;
-`;
+`
 
-const JoinSection = styled.section`
+const JoinTeamSection = styled.section`
   padding: 100px 20px;
-  background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
               url('https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80');
   background-size: cover;
   background-position: center;
   color: white;
   text-align: center;
-`;
+  position: relative;
+  overflow: hidden;
 
-const JoinGrid = styled.div`
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, #FF6B6B, #4A90E2);
+    opacity: 0.8;
+    z-index: 1;
+  }
+`
+
+const JoinTeamContent = styled.div`
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: 0 auto;
+`
+
+const JoinTeamTitle = styled.h2`
+  font-size: 3rem;
+  margin-bottom: 2rem;
+  color: #FFFFFF;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+`
+
+const JoinTeamSubtitle = styled.p`
+  font-size: 1.2rem;
+  max-width: 800px;
+  margin: 0 auto 3rem;
+  line-height: 1.6;
+`
+
+const JoinTeamGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 40px;
-  max-width: 1200px;
-  margin: 40px auto 0;
-`;
+  gap: 2rem;
+  margin-bottom: 3rem;
+`
 
-const JoinCard = styled.div`
+const JoinTeamCard = styled.div`
   background: rgba(255, 255, 255, 0.1);
-  padding: 40px;
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 2rem;
   transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
 
   &:hover {
     transform: translateY(-10px);
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.2);
   }
-`;
+`
 
-const JoinTitle = styled.h3`
-  font-size: 1.8rem;
-  margin-bottom: 15px;
-  color: #FF6B6B;
-`;
+const JoinTeamIcon = styled.div`
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #FFFFFF;
+`
 
-const JoinDescription = styled.p`
-  margin-bottom: 25px;
+const JoinTeamCardTitle = styled.h3`
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #FFFFFF;
+`
+
+const JoinTeamCardDescription = styled.p`
+  margin-bottom: 1.5rem;
   line-height: 1.6;
-`;
+`
 
-const JoinButton = styled(Link)`
-  display: inline-block;
-  background: #FF6B6B;
-  color: white;
-  padding: 12px 30px;
+const JoinTeamButton = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  background: #FFFFFF;
+  color: #FF6B6B;
+  padding: 0.8rem 1.5rem;
   border-radius: 50px;
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s ease;
+  font-size: 1.1rem;
 
   &:hover {
-    background: #FF5252;
+    background: #FF6B6B;
+    color: #FFFFFF;
     transform: translateY(-2px);
   }
-`;
+
+  svg {
+    margin-left: 0.5rem;
+    transition: transform 0.3s ease;
+  }
+
+  &:hover svg {
+    transform: translateX(5px);
+  }
+`
 
 function Home() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const handleJoinClick = (role) => {
-    navigate('/signup', { state: { selectedRole: role } });
-  };
+    navigate("/signup", { state: { selectedRole: role } })
+  }
 
   return (
     <HomeContainer>
@@ -334,28 +399,70 @@ function Home() {
           <ServiceCard>
             <Clock />
             <ServiceTitle>Pet Sitting</ServiceTitle>
-            <ServiceDescription>
-              Professional pet sitting services when you need to be away.
-            </ServiceDescription>
+            <ServiceDescription>Professional pet sitting services when you need to be away.</ServiceDescription>
           </ServiceCard>
 
           <ServiceCard>
             <Moon />
             <ServiceTitle>Overnight Care</ServiceTitle>
-            <ServiceDescription>
-              24/7 attention and care for your pets in a comfortable environment.
-            </ServiceDescription>
+            <ServiceDescription>24/7 attention and care for your pets in a comfortable environment.</ServiceDescription>
           </ServiceCard>
 
           <ServiceCard>
             <Stethoscope />
             <ServiceTitle>Health Care</ServiceTitle>
+            <ServiceDescription>Regular health check-ups and medical assistance for your pets.</ServiceDescription>
+          </ServiceCard>
+          <ServiceCard>
+            <HomeIcon />
+            <ServiceTitle>Adoption Centers</ServiceTitle>
             <ServiceDescription>
-              Regular health check-ups and medical assistance for your pets.
+              Explore our network of trusted adoption centers and find your new furry friend.
             </ServiceDescription>
+            <Button as={Link} to="/adoption-centers" style={{ marginTop: "15px" }}>
+              View Centers
+            </Button>
           </ServiceCard>
         </ServicesGrid>
       </ServicesSection>
+
+      <JoinTeamSection>
+        <JoinTeamContent>
+          <JoinTeamTitle>Join Our Growing Community</JoinTeamTitle>
+          <JoinTeamSubtitle>
+            Be a part of our mission to provide the best care for pets. Whether you're a pet shop owner or run an
+            adoption center, we have opportunities for you!
+          </JoinTeamSubtitle>
+          <JoinTeamGrid>
+            <JoinTeamCard>
+              <JoinTeamIcon>
+                <Store size={48} />
+              </JoinTeamIcon>
+              <JoinTeamCardTitle>Pet Shop Partners</JoinTeamCardTitle>
+              <JoinTeamCardDescription>
+                Expand your reach and connect with pet parents in your area. Join our network of trusted pet supply
+                providers and grow your business.
+              </JoinTeamCardDescription>
+              <JoinTeamButton onClick={() => handleJoinClick("petShop")}>
+                Learn More <ArrowRight size={20} />
+              </JoinTeamButton>
+            </JoinTeamCard>
+            <JoinTeamCard>
+              <JoinTeamIcon>
+                <Users size={48} />
+              </JoinTeamIcon>
+              <JoinTeamCardTitle>Adoption Centers</JoinTeamCardTitle>
+              <JoinTeamCardDescription>
+                Help more pets find their forever homes. Partner with us to increase visibility and adoption rates for
+                your shelter or rescue organization.
+              </JoinTeamCardDescription>
+              <JoinTeamButton onClick={() => handleJoinClick("adoptionCenter")}>
+                Learn More <ArrowRight size={20} />
+              </JoinTeamButton>
+            </JoinTeamCard>
+          </JoinTeamGrid>
+        </JoinTeamContent>
+      </JoinTeamSection>
 
       <ReviewsSection>
         <SectionTitle>What Pet Parents Say</SectionTitle>
@@ -367,7 +474,8 @@ function Home() {
               ))}
             </Stars>
             <ReviewText>
-              "Paw-Partner has been a game-changer for me and my pets. The pet profile feature helps me keep track of everything, and the community is so supportive!"
+              "Paw-Partner has been a game-changer for me and my pets. The pet profile feature helps me keep track of
+              everything, and the community is so supportive!"
             </ReviewText>
             <ReviewAuthor>
               <AuthorImage>SJ</AuthorImage>
@@ -385,7 +493,8 @@ function Home() {
               ))}
             </Stars>
             <ReviewText>
-              "As a cat mom, I love how easy it is to find reliable pet sitters and shop for supplies. The service is simply outstanding!"
+              "As a cat mom, I love how easy it is to find reliable pet sitters and shop for supplies. The service is
+              simply outstanding!"
             </ReviewText>
             <ReviewAuthor>
               <AuthorImage>EM</AuthorImage>
@@ -403,7 +512,8 @@ function Home() {
               ))}
             </Stars>
             <ReviewText>
-              "Found my perfect furry companion through Paw-Partner's adoption center network. The process was smooth and the support was incredible!"
+              "Found my perfect furry companion through Paw-Partner's adoption center network. The process was smooth
+              and the support was incredible!"
             </ReviewText>
             <ReviewAuthor>
               <AuthorImage>MB</AuthorImage>
@@ -416,40 +526,15 @@ function Home() {
         </ReviewsGrid>
       </ReviewsSection>
 
-      <JoinSection>
-        <SectionTitle>Join Our Growing Community</SectionTitle>
-        <JoinGrid>
-          <JoinCard>
-            <JoinTitle>Pet Shop Partners</JoinTitle>
-            <JoinDescription>
-              Expand your reach and connect with pet parents in your area. Join our network of trusted pet supply providers.
-            </JoinDescription>
-            <JoinButton onClick={() => handleJoinClick('petShop')}>
-              Learn More
-            </JoinButton>
-          </JoinCard>
-
-          <JoinCard>
-            <JoinTitle>Adoption Centers</JoinTitle>
-            <JoinDescription>
-              Help more pets find their forever homes. Partner with us to increase visibility and adoption rates.
-            </JoinDescription>
-            <JoinButton onClick={() => handleJoinClick('adoptionCenter')}>
-              Learn More
-            </JoinButton>
-          </JoinCard>
-        </JoinGrid>
-      </JoinSection>
-
       <InfoSection>
         <InfoText>
-          Ready to give your pet the care they deserve? Join Paw-Partner today and experience the difference!{' '}
+          Ready to give your pet the care they deserve? Join Paw-Partner today and experience the difference!{" "}
           <Link to="/pet-profile">Get started now</Link> and become part of our loving pet community.
         </InfoText>
       </InfoSection>
     </HomeContainer>
-  );
+  )
 }
 
-export default Home;
+export default Home
 

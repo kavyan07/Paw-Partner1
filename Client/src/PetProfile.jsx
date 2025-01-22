@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import styled from 'styled-components';
-import { Plus, X } from 'lucide-react';
+import React, { useState, useEffect } from "react"
+import axios from "axios"
+import styled from "styled-components"
+import { Plus, X, Edit, Trash2, Loader } from "lucide-react"
 
 const ProfileContainer = styled.div`
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
-`;
+`
 
 const PetGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2rem;
   margin-top: 2rem;
-`;
+`
 
 const PetCard = styled.div`
   background: white;
@@ -25,7 +25,7 @@ const PetCard = styled.div`
   flex-direction: column;
   align-items: center;
   position: relative;
-`;
+`
 
 const AddPetCard = styled(PetCard)`
   justify-content: center;
@@ -37,7 +37,7 @@ const AddPetCard = styled(PetCard)`
   &:hover {
     background: rgba(255, 107, 107, 0.2);
   }
-`;
+`
 
 const PetImage = styled.div`
   width: 120px;
@@ -51,29 +51,29 @@ const PetImage = styled.div`
     height: 100%;
     object-fit: cover;
   }
-`;
+`
 
 const PetInfo = styled.div`
   text-align: center;
   width: 100%;
-`;
+`
 
 const PetName = styled.h3`
   font-size: 1.5rem;
   color: #2C3E50;
   margin: 0.5rem 0;
-`;
+`
 
 const PetDetail = styled.p`
   color: #666;
   margin: 0.25rem 0;
-`;
+`
 
 const ButtonGroup = styled.div`
   display: flex;
   gap: 1rem;
   margin-top: 1rem;
-`;
+`
 
 const Button = styled.button`
   padding: 0.5rem 1rem;
@@ -82,7 +82,10 @@ const Button = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-`;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`
 
 const EditButton = styled(Button)`
   background: #4CAF50;
@@ -91,7 +94,7 @@ const EditButton = styled(Button)`
   &:hover {
     background: #45a049;
   }
-`;
+`
 
 const DeleteButton = styled(Button)`
   background: #FF5252;
@@ -100,7 +103,7 @@ const DeleteButton = styled(Button)`
   &:hover {
     background: #ff3333;
   }
-`;
+`
 
 const ErrorMessage = styled.div`
   color: #FF5252;
@@ -109,7 +112,16 @@ const ErrorMessage = styled.div`
   border-radius: 8px;
   margin-bottom: 1rem;
   text-align: center;
-`;
+`
+
+const SuccessMessage = styled.div`
+  color: #4CAF50;
+  background: #E8F5E9;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  text-align: center;
+`
 
 const Modal = styled.div`
   position: fixed;
@@ -122,7 +134,7 @@ const Modal = styled.div`
   justify-content: center;
   align-items: center;
   z-index: 1000;
-`;
+`
 
 const ModalContent = styled.div`
   background: white;
@@ -131,7 +143,7 @@ const ModalContent = styled.div`
   width: 90%;
   max-width: 500px;
   position: relative;
-`;
+`
 
 const CloseButton = styled.button`
   position: absolute;
@@ -146,13 +158,13 @@ const CloseButton = styled.button`
   &:hover {
     color: #FF5252;
   }
-`;
+`
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1rem;
-`;
+`
 
 const Input = styled.input`
   width: 100%;
@@ -165,7 +177,7 @@ const Input = styled.input`
     border-color: #FF6B6B;
     outline: none;
   }
-`;
+`
 
 const Select = styled.select`
   width: 100%;
@@ -178,7 +190,7 @@ const Select = styled.select`
     border-color: #FF6B6B;
     outline: none;
   }
-`;
+`
 
 const TextArea = styled.textarea`
   width: 100%;
@@ -193,156 +205,173 @@ const TextArea = styled.textarea`
     border-color: #FF6B6B;
     outline: none;
   }
-`;
+`
 
 function PetProfile() {
-  const [pets, setPets] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingPet, setEditingPet] = useState(null);
-  const [error, setError] = useState('');
+  const [pets, setPets] = useState([])
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingPet, setEditingPet] = useState(null)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
   const [formData, setFormData] = useState({
-    name: '',
-    type: '',
-    breed: '',
-    age: '',
-    gender: '',
-    description: '',
-    image: null
-  });
+    name: "",
+    type: "",
+    breed: "",
+    age: "",
+    gender: "",
+    description: "",
+    image: null,
+  })
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    fetchPets();
-  }, []);
+    fetchPets()
+  }, [])
 
   const fetchPets = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/v1/owned-pets/', {
-        withCredentials: true
-      });
-      setPets(response.data.data);
+      const response = await axios.get("http://localhost:8000/api/v1/owned-pets/", {
+        withCredentials: true,
+      })
+      setPets(response.data.data)
     } catch (error) {
-      setError(error.response?.data?.message || 'Failed to fetch pets');
+      setError(error.response?.data?.message || "Failed to fetch pets")
     }
-  };
+  }
 
   const handleInputChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === 'image') {
-      setFormData(prev => ({ ...prev, image: files[0] }));
+    const { name, value, files } = e.target
+    if (name === "image") {
+      setFormData((prev) => ({ ...prev, image: files[0] }))
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }))
     }
-  };
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formDataToSend = new FormData();
-    
-    Object.keys(formData).forEach(key => {
-      if (key === 'image' && formData[key]) {
-        formDataToSend.append('image', formData[key]);
-      } else {
-        formDataToSend.append(key, formData[key]);
-      }
-    });
+    e.preventDefault()
+    setError("")
+    setSuccess("")
+    setLoading(true)
+
+    const petData = {
+      name: formData.name,
+      type: formData.type,
+      breed: formData.breed,
+      age: formData.age,
+      gender: formData.gender,
+      description: formData.description,
+    }
 
     try {
+      let response
       if (editingPet) {
-        await axios.patch(
-          `http://localhost:8000/api/v1/owned-pets/update/${editingPet._id}`,
-          formDataToSend,
-          { 
-            headers: {'Content-Type': 'multipart/form-data'}, 
-            withCredentials: true
-          }
-        );
+        response = await axios.patch(`http://localhost:8000/api/v1/owned-pets/update/${editingPet._id}`, petData, {
+          withCredentials: true,
+        })
+        setSuccess("Pet updated successfully")
+        setPets(pets.map((pet) => (pet._id === editingPet._id ? response.data.data : pet)))
       } else {
-        await axios.post(
-          'http://localhost:8000/api/v1/owned-pets/add',
-          formDataToSend,
-          { 
-            headers: {'Content-Type': 'multipart/form-data'},
-            withCredentials: true
-          }
-        );
+        response = await axios.post("http://localhost:8000/api/v1/owned-pets/add", petData, {
+          withCredentials: true,
+        })
+        setSuccess("Pet added successfully")
+        setPets([...pets, response.data.data])
       }
-      fetchPets();
-      setIsModalOpen(false);
-      setEditingPet(null);
+      setIsModalOpen(false)
+      setEditingPet(null)
       setFormData({
-        name: '',
-        type: '',
-        breed: '',
-        age: '',
-        gender: '',
-        description: '',
-        image: null
-      });
+        name: "",
+        type: "",
+        breed: "",
+        age: "",
+        gender: "",
+        description: "",
+        image: null,
+      })
     } catch (error) {
-      setError(error.response?.data?.message || 'Failed to save pet');
+      setError(error.response?.data?.message || "Failed to save pet")
+    } finally {
+      setLoading(false)
     }
-  };
+  }
+
+  const handleEdit = (pet) => {
+    setEditingPet(pet)
+    setFormData({
+      name: pet.name,
+      type: pet.type,
+      breed: pet.breed,
+      age: pet.age,
+      gender: pet.gender,
+      description: pet.description,
+      image: null,
+    })
+    setIsModalOpen(true)
+  }
 
   const handleDelete = async (petId) => {
-    if (window.confirm('Are you sure you want to delete this pet?')) {
+    if (window.confirm("Are you sure you want to delete this pet?")) {
       try {
         await axios.delete(`http://localhost:8000/api/v1/owned-pets/delete/${petId}`, {
-          withCredentials: true
-        });
-        fetchPets();
+          withCredentials: true,
+        })
+        setSuccess("Pet deleted successfully")
+        setPets(pets.filter((pet) => pet._id !== petId))
       } catch (error) {
-        setError(error.response?.data?.message || 'Failed to delete pet');
+        setError(error.response?.data?.message || "Failed to delete pet")
       }
     }
-  };
+  }
 
   return (
     <ProfileContainer>
       <h1>My Pets</h1>
       {error && <ErrorMessage>{error}</ErrorMessage>}
+      {success && <SuccessMessage>{success}</SuccessMessage>}
       <PetGrid>
-        <AddPetCard onClick={() => {
-          setIsModalOpen(true);
-          setEditingPet(null);
-          setFormData({
-            name: '',
-            type: '',
-            breed: '',
-            age: '',
-            gender: '',
-            description: '',
-            image: null
-          });
-        }}>
+        <AddPetCard
+          onClick={() => {
+            setIsModalOpen(true)
+            setEditingPet(null)
+            setFormData({
+              name: "",
+              type: "",
+              breed: "",
+              age: "",
+              gender: "",
+              description: "",
+              image: null,
+            })
+          }}
+        >
           <Plus size={32} color="#FF6B6B" />
           <p>Add New Pet</p>
         </AddPetCard>
-        
-        {pets.map(pet => (
+
+        {pets.map((pet) => (
           <PetCard key={pet._id}>
             <PetImage>
               <img src={pet.imageUrl || "/placeholder.svg"} alt={pet.name} />
             </PetImage>
             <PetInfo>
               <PetName>{pet.name}</PetName>
-              <PetDetail>{pet.type} • {pet.breed}</PetDetail>
-              <PetDetail>{pet.age} years • {pet.gender}</PetDetail>
+              <PetDetail>
+                {pet.type} • {pet.breed}
+              </PetDetail>
+              <PetDetail>
+                {pet.age} years • {pet.gender}
+              </PetDetail>
               <PetDetail>{pet.description}</PetDetail>
               <ButtonGroup>
-                <EditButton onClick={() => {
-                  setEditingPet(pet);
-                  setFormData({
-                    name: pet.name,
-                    type: pet.type,
-                    breed: pet.breed,
-                    age: pet.age,
-                    gender: pet.gender,
-                    description: pet.description,
-                    image: null
-                  });
-                  setIsModalOpen(true);
-                }}>Edit</EditButton>
-                <DeleteButton onClick={() => handleDelete(pet._id)}>Delete</DeleteButton>
+                <EditButton onClick={() => handleEdit(pet)}>
+                  <Edit size={16} />
+                  Edit
+                </EditButton>
+                <DeleteButton onClick={() => handleDelete(pet._id)}>
+                  <Trash2 size={16} />
+                  Delete
+                </DeleteButton>
               </ButtonGroup>
             </PetInfo>
           </PetCard>
@@ -352,14 +381,16 @@ function PetProfile() {
       {isModalOpen && (
         <Modal>
           <ModalContent>
-            <CloseButton onClick={() => {
-              setIsModalOpen(false);
-              setEditingPet(null);
-              setError('');
-            }}>
+            <CloseButton
+              onClick={() => {
+                setIsModalOpen(false)
+                setEditingPet(null)
+                setError("")
+              }}
+            >
               <X />
             </CloseButton>
-            <h2>{editingPet ? 'Edit Pet' : 'Add New Pet'}</h2>
+            <h2>{editingPet ? "Edit Pet" : "Add New Pet"}</h2>
             <Form onSubmit={handleSubmit}>
               <Input
                 type="text"
@@ -369,12 +400,7 @@ function PetProfile() {
                 onChange={handleInputChange}
                 required
               />
-              <Select
-                name="type"
-                value={formData.type}
-                onChange={handleInputChange}
-                required
-              >
+              <Select name="type" value={formData.type} onChange={handleInputChange} required>
                 <option value="">Select pet type</option>
                 <option value="Dog">Dog</option>
                 <option value="Cat">Cat</option>
@@ -398,12 +424,7 @@ function PetProfile() {
                 onChange={handleInputChange}
                 required
               />
-              <Select
-                name="gender"
-                value={formData.gender}
-                onChange={handleInputChange}
-                required
-              >
+              <Select name="gender" value={formData.gender} onChange={handleInputChange} required>
                 <option value="">Select gender</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
@@ -415,22 +436,19 @@ function PetProfile() {
                 onChange={handleInputChange}
                 required
               />
-              <Input
-                type="file"
-                name="image"
-                onChange={handleInputChange}
-                accept="image/*"
-                required={!editingPet}
-              />
+              <Input type="file" name="image" onChange={handleInputChange} accept="image/*" required={!editingPet} />
               <ButtonGroup>
-                <EditButton type="submit">
-                  {editingPet ? 'Update Pet' : 'Add Pet'}
+                <EditButton type="submit" disabled={loading}>
+                  {loading ? <Loader size={16} /> : editingPet ? "Update Pet" : "Add Pet"}
                 </EditButton>
-                <DeleteButton type="button" onClick={() => {
-                  setIsModalOpen(false);
-                  setEditingPet(null);
-                  setError('');
-                }}>
+                <DeleteButton
+                  type="button"
+                  onClick={() => {
+                    setIsModalOpen(false)
+                    setEditingPet(null)
+                    setError("")
+                  }}
+                >
                   Cancel
                 </DeleteButton>
               </ButtonGroup>
@@ -439,8 +457,8 @@ function PetProfile() {
         </Modal>
       )}
     </ProfileContainer>
-  );
+  )
 }
 
-export default PetProfile;
+export default PetProfile
 

@@ -5,7 +5,7 @@ import {
     getAdoptionCenterPets,
     deleteAdoptionCenterPet
 } from "../controllers/center-pet.controller.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { verifyJWT, checkRole } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
 const router = Router();
