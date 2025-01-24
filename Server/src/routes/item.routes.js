@@ -6,8 +6,7 @@ import {
     deleteItem,
     getAllItems
 } from "../controllers/item.controller.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { checkRole } from "../middlewares/role.middleware.js";
+import { verifyJWT, checkRole } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
 const router = Router();
