@@ -44,11 +44,20 @@ const updateItem = asyncHandler(async (req, res) => {
         throw new ApiError(403, "Unauthorized");
     }
 
+    let imageUrl = item.imageUrl;
+    if(req.file) {
+        imageUrl = await uploadOnCloudinary(req.file.path);
+        if(imageUrl == item.imageUrl) {
+            throw new ApiError(500, "Error uploading image to cloudinary")
+        }
+    }
+
     const updatedItem = await Item.findByIdAndUpdate(itemId, {
         name,
         weight,
         description,
-        type
+        type,
+        imageUrl
     }, { new: true });
 
     res.status(200).json(

@@ -47,7 +47,7 @@ const addOwnedPet = asyncHandler(async (req, res) => {
 const updateOwnedPet = asyncHandler(async (req, res) => {
     const { name, type, breed, age, gender, description } = req.body;
     const petId = req.params._id;
-    console.log(req.body, petId);
+    //console.log(req.body, petId);
     const pet = await OwnedPet.findById(petId);
     if (!pet) {
         throw new ApiError(404, "Pet not found");
@@ -56,7 +56,14 @@ const updateOwnedPet = asyncHandler(async (req, res) => {
     if (pet.owner.toString() !== req.user._id.toString()) {
         throw new ApiError(403, "Unauthorized");
     }
-
+    
+    let imageUrl = pet.imageUrl 
+    if(req.file) {
+        imageUrl = await uploadOnCloudinary(req.file.path);
+        if(imageUrl == pet.imageUrl) {
+            throw new ApiError(500, "Error uploading image to cloudinary")
+        }
+    }
     const updates = {};
     if (name) updates.name = name;
     if (type) updates.type = type;
@@ -64,6 +71,7 @@ const updateOwnedPet = asyncHandler(async (req, res) => {
     if (age) updates.age = age;
     if (gender) updates.gender = gender;
     if (description) updates.description = description;
+    if (imageUrl) updates.imageUrl = imageUrl;
 
     const updatedPet = await OwnedPet.findByIdAndUpdate(
         petId,

@@ -36,6 +36,10 @@ const shopSchema = new Schema(
             type: String,
             required: true
         },
+        imageUrl: {
+            type: String,
+            default: "https://res.cloudinary.com/dd2y1lxsf/image/upload/v1737739026/shop_default_axzvoi.jpg"
+        },
         role: {
             type: String,
             enum: ["petShop"],
@@ -105,6 +109,10 @@ const tempShopSchema = new Schema({
     },
     contact: {
         type: String
+    },
+    photo: {
+        type: String,
+        default: "https://example.com/default-pet-shop-photo.jpg"
     },
     role: {
         type: String,
