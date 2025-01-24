@@ -1,21 +1,19 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { Pet } from "../models/pet.model.js";
+import { AdoptionCenterPet } from "../models/center-pet.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
-import { unlink } from "node:fs/promises";
 
-
-const addPet = asyncHandler(async (req, res) => {
-    const { petName, petType, breed, age, gender, description } = req.body;
+const addAdoptionCenterPet = asyncHandler(async (req, res) => {
+    const { name, type, breed, age, gender, description } = req.body;
+    const adoptionCenter = req.user._id;
     if(!req.file) {
         throw new ApiError(400, "Please upload a image file");
     }
     if (!req.user) {
         throw new ApiError(401, "Unauthorized - User not authenticated");
     }
-    const owner = req.user._id;
-    if (!petName || !petType || !breed || !age || !gender || !description) {
+    if (!name || !type || !breed || !age || !gender || !description) {
         throw new ApiError(400, "All fields are required");
     }
     // Add file size validation
@@ -27,73 +25,78 @@ const addPet = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Failed to upload image");
     }
 
-    const pet = await Pet.create({
-        petName,
-        petType,
+    const pet = await AdoptionCenterPet.create({
+        name,
+        type,
         breed,
         age,
         gender,
         description,
-        image: imageUrl,
-        owner
+        imageUrl: imageUrl,
+        adoptionCenter
     });
 
-    return res.status(201).json(
+    res.status(201).json(
         new ApiResponse(201, pet, "Pet added successfully")
     );
 });
 
-const updatePet = asyncHandler(async (req, res) => {
-    const { petName, petType, breed, age, gender, description } = req.body;
+const updateAdoptionCenterPet = asyncHandler(async (req, res) => {
     const petId = req.params._id;
+    const { name, type, breed, age, gender, description } = req.body;
 
-    const pet = await Pet.findById(petId);
+    const pet = await AdoptionCenterPet.findById(petId);
     if (!pet) {
         throw new ApiError(404, "Pet not found");
     }
 
-    if (pet.owner.toString() !== req.user._id.toString()) {
+    if (pet.adoptionCenter.toString() !== req.user._id.toString()) {
         throw new ApiError(403, "Unauthorized");
     }
 
-    const updatedPet = await Pet.findByIdAndUpdate(petId, {
-        petName,
-        petType,
+    const updatedPet = await AdoptionCenterPet.findByIdAndUpdate(petId, {
+        name,
+        type,
         breed,
         age,
         gender,
         description
     }, { new: true });
 
-    return res.status(200).json(
+    res.status(200).json(
         new ApiResponse(200, updatedPet, "Pet updated successfully")
     );
 });
 
-const getPets = asyncHandler(async (req, res) => {
-    const pets = await Pet.find({ owner: req.user._id });
+const getAdoptionCenterPets = asyncHandler(async (req, res) => {
+    const { centerId } = req.params;
+    const pets = await AdoptionCenterPet.find({ adoptionCenter: centerId });
     return res.status(200).json(
         new ApiResponse(200, pets, "Pets fetched successfully")
     );
 });
 
-const deletePet = asyncHandler(async (req, res) => {
+const deleteAdoptionCenterPet = asyncHandler(async (req, res) => {
     const petId = req.params._id;
-    const pet = await Pet.findById(petId);
+    const pet = await AdoptionCenterPet.findById(petId);
     if (!pet) {
         throw new ApiError(404, "Pet not found");
     }
 
-    if (pet.owner.toString() !== req.user._id.toString()) {
+    if (pet.adoptionCenter.toString() !== req.user._id.toString()) {
         throw new ApiError(403, "Unauthorized");
     }
 
-    await Pet.findByIdAndDelete(petId);
+    await AdoptionCenterPet.findByIdAndDelete(petId);
 
-    return res.status(200).json(
+    res.status(200).json(
         new ApiResponse(200, {}, "Pet deleted successfully")
     );
 });
 
-export { addPet, updatePet, getPets, deletePet };
-
+export {
+    addAdoptionCenterPet,
+    updateAdoptionCenterPet,
+    getAdoptionCenterPets,
+    deleteAdoptionCenterPet
+};

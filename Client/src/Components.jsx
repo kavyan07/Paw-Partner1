@@ -78,6 +78,7 @@ export const Button = styled.button`
   border-radius: 12px;
   font-size: 1.1rem;
   font-weight: 600;
+  cursor: pointer;
   transition: all 0.3s ease;
   
   &:hover {
@@ -103,6 +104,7 @@ export const ToggleButton = styled.button`
   font-size: 1rem;
   font-weight: 500;
   text-decoration: underline;
+  cursor: pointer;
   
   &:hover {
     color: #FF5252;
@@ -114,77 +116,10 @@ export const Anchor = styled.a`
   font-size: 0.9rem;
   text-align: right;
   text-decoration: none;
+  cursor: pointer;
   
   &:hover {
     color: #FF6B6B;
     text-decoration: underline;
-  }
-`;
-
-export const ButtonGroup = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-`;
-
-export const RoleButton = styled.button`
-  background: ${props => props.active ? '#FF6B6B' : 'white'};
-  color: ${props => props.active ? 'white' : '#666'};
-  border: 2px solid ${props => props.active ? '#FF6B6B' : '#E0E0E0'};
-  padding: 12px;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    background: ${props => props.active ? '#FF5252' : '#F5F5F5'};
-    border-color: ${props => props.active ? '#FF5252' : '#FF6B6B'};
-  }
-`;
-
-export const SocialButton = styled.button`
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: 2px solid #E0E0E0;
-  background: white;
-  color: #666;
-  font-size: 1rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    background: #F5F5F5;
-    border-color: #FF6B6B;
-  }
-  
-  svg {
-    font-size: 1.2rem;
-  }
-`;
-
-export const Divider = styled.div`
-  display: flex;
-  align-items: center;
-  text-align: center;
-  margin: 20px 0;
-  
-  &::before,
-  &::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid #E0E0E0;
-  }
-  
-  span {
-    padding: 0 10px;
-    color: #666;
-    font-size: 0.9rem;
   }
 `;

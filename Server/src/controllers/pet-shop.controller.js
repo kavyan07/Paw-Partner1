@@ -1,19 +1,19 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/ApiError.js"
-import { User} from "../models/user.model.js"
+import { Shop } from "../models/pet-shop.model.js"
 import sgMail from '@sendgrid/mail'
-import { TempUser} from "../models/user.model.js";
+import { TempShop } from "../models/pet-shop.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
 
-const generateAccessAndRefereshTokens = async(userId) =>{
+const generateAccessAndRefereshTokens = async(shopId) =>{
     try {
-        const user = await User.findById(userId)
-        const accessToken = user.generateAccessToken()
-        const refreshToken = user.generateRefreshToken()
+        const shop = await Shop.findById(shopId)
+        const accessToken = shop.generateAccessToken()
+        const refreshToken = shop.generateRefreshToken()
 
-        user.refreshToken = refreshToken
-        await user.save({ validateBeforeSave: false })
+        shop.refreshToken = refreshToken
+        await shop.save({ validateBeforeSave: false })
 
         return {accessToken, refreshToken}
 
@@ -25,28 +25,28 @@ const generateAccessAndRefereshTokens = async(userId) =>{
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
-const registerUser = asyncHandler(async (req, res) => {
-    const { email, username, password, contact, address, role } = req.body
+const registerShop = asyncHandler(async (req, res) => {
+    const { email, password, contact, address, shopName, role } = req.body
 
-    if ([email, username, password, contact, address, role].some((field) => field?.trim() === "")) {
+    if ([email, username, password, contact, shopName, role].some((field) => field?.trim() === "")) {
         throw new ApiError(400, "All fields are required")
     }
 
-    const existedUser = await User.findOne({
-        $or: [{ username }, { email }]
+    const existedShop = await Shop.findOne({
+        $or: [{ shopName }, { email }]
     })
 
-    if (existedUser) {
-        throw new ApiError(409, "User with email or username already exists")
+    if (existedShop) {
+        throw new ApiError(409, "Shop with email or shopName already exists")
     }
-    await TempUser.findOneAndDelete({ email });
+    await TempShop.findOneAndDelete({ email });
     const otp = String(Math.floor(100000 + Math.random() * 900000)) // 6-digit OTP
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
-    const tempUser = await TempUser.create({
+    const tempShop = await TempShop.create({
         email,
-        username,
         password,
         contact,
+        shopName,
         address,
         role,
         otp,
@@ -56,10 +56,11 @@ const registerUser = asyncHandler(async (req, res) => {
     const msg = {
         to: email,
         from: process.env.VERIFIED_SENDER_EMAIL,
-        subject: "Email Verification OTP",
-        text: `Your OTP for registration is: ${otp}. Valid for 10 minutes.`,
+        subject: "Pet Shop - Email Verification OTP",
+        text: `Welcome Pet Shop! Your OTP for registration is: ${otp}. Valid for 10 minutes.`,
         html: `
-            <h1>Email Verification</h1>
+            <h1>Pet Shop - Email Verification</h1>
+            <p>Welcome Pet Shop!</p>
             <p>Your OTP for registration is: <strong>${otp}</strong></p>
             <p>This OTP is valid for 10 minutes.</p>
         `
@@ -75,7 +76,7 @@ const registerUser = asyncHandler(async (req, res) => {
             )
         )
     } catch (error) {
-        await TempUser.findByIdAndDelete(tempUser._id)
+        await TempShop.findByIdAndDelete(tempShop._id)
         throw new ApiError(500, "Error sending OTP email")
     }
 })
@@ -86,39 +87,39 @@ const verifyOTP = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Email and OTP are required")
     }
 
-    const tempUser = await TempUser.findOne({ email });
+    const tempShop = await TempShop.findOne({ email });
 
-    if (!tempUser || tempUser.otpExpiry < new Date()) {
+    if (!tempShop || tempShop.otpExpiry < new Date()) {
         throw new ApiError(400, "OTP expired or invalid email")
     }
-    if (tempUser.otp.toString() !== otp.toString()) {
-        tempUser.findByIdAndDelete(tempUser._id)
+    if (tempShop.otp.toString() !== otp.toString()) {
+        tempShop.findByIdAndDelete(tempShop._id)
         throw new ApiError(400, "Invalid OTP");
     }
 
-    // Create actual user
-    const user = await User.create({
-        email: tempUser.email,
-        username: tempUser.username,
-        password: tempUser.password,
-        contact: tempUser.contact,
-        address: tempUser.address,
-        role: tempUser.role
+    // Create actual shop
+    const shop = await Shop.create({
+        email: tempShop.email,
+        shopName: tempShop.shopName,
+        password: tempShop.password,
+        contact: tempShop.contact,
+        address: tempShop.address,
+        role: tempShop.role
     })
 
-    // Delete temporary user
-    await TempUser.findByIdAndDelete(tempUser._id)
+    // Delete temporary shop
+    await TempShop.findByIdAndDelete(tempShop._id)
 
     // Generate tokens
-    const accessToken = user.generateAccessToken()
-    const refreshToken = user.generateRefreshToken()
+    const accessToken = shop.generateAccessToken()
+    const refreshToken = shop.generateRefreshToken()
 
-    // Update user with refresh token
-    user.refreshToken = refreshToken
-    await user.save({validateBeforeSave: false})
+    // Update shop with refresh token
+    shop.refreshToken = refreshToken
+    await shop.save({validateBeforeSave: false})
 
-    // Get user without sensitive info
-    const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
+    // Get shop without sensitive info
+    const loggedInShop = await Shop.findById(shop._id).select("-password -refreshToken")
 
     // Set cookies
     const options = {
@@ -135,11 +136,11 @@ const verifyOTP = asyncHandler(async (req, res) => {
             new ApiResponse(
                 200,
                 {
-                    user: loggedInUser,
+                    shop: loggedInShop,
                     accessToken,
                     refreshToken
                 },
-                "User registered successfully"
+                "Pet shop registered successfully"
             )
         )
 })
@@ -152,9 +153,9 @@ const resendOTP = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Email is required")
     }
 
-    const tempUser = await TempUser.findOne({ email })
+    const tempShop = await TempShop.findOne({ email })
 
-    if (!tempUser) {
+    if (!tempShop) {
         throw new ApiError(404, "No pending registration found for this email")
     }
 
@@ -162,19 +163,19 @@ const resendOTP = asyncHandler(async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000)
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000)
 
-    // Update temporary user with new OTP
-    tempUser.otp = otp
-    tempUser.otpExpiry = otpExpiry
-    await tempUser.save()
+    // Update temporary shop with new OTP
+    tempShop.otp = otp
+    tempShop.otpExpiry = otpExpiry
+    await tempShop.save()
 
     const msg = {
         to: email,
         from: process.env.VERIFIED_SENDER_EMAIL,
-        subject: "New Email Verification OTP",
-        text: `Your new OTP for registration is: ${otp}. Valid for 10 minutes.`,
+        subject: "Pet Shop - New Email Verification OTP",
+        text: `Your new OTP for Pet Shop registration is: ${otp}. Valid for 10 minutes.`,
         html: `
-            <h1>New Email Verification OTP</h1>
-            <p>Your new OTP for registration is: <strong>${otp}</strong></p>
+            <h1>Pet Shop - New Email Verification OTP</h1>
+            <p>Your new OTP for Pet Shop registration is: <strong>${otp}</strong></p>
             <p>This OTP is valid for 10 minutes.</p>
         `
     }
@@ -200,18 +201,18 @@ const forgotPassword = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Email is required")
     }
 
-    const user = await User.findOne({ email })
+    const shop = await Shop.findOne({ email })
 
-    if (!user) {
-        throw new ApiError(404, "User not found")
+    if (!shop) {
+        throw new ApiError(404, "Pet shop not found")
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000)
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000)
 
     // Create temporary OTP storage
-const tempOTPData = await TempUser.create({
-    email: user.email,
+const tempOTPData = await TempShop.create({
+    email: shop.email,
     otp,
     otpExpiry
 })
@@ -219,10 +220,10 @@ const tempOTPData = await TempUser.create({
     const msg = {
         to: email,
         from: process.env.VERIFIED_SENDER_EMAIL,
-        subject: "Password Reset OTP",
+        subject: "Pet Shop - Password Reset OTP",
         text: `Your OTP for password reset is: ${otp}. Valid for 10 minutes.`,
         html: `
-            <h1>Password Reset OTP</h1>
+            <h1>Pet Shop - Password Reset OTP</h1>
             <p>Your OTP for password reset is: <strong>${otp}</strong></p>
             <p>This OTP is valid for 10 minutes.</p>
         `
@@ -249,7 +250,7 @@ const verifyResetPasswordOTP = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Email and OTP are required")
     }
 
-    const tempOTPData = await TempUser.findOne({ email })
+    const tempOTPData = await TempShop.findOne({ email })
 
     if (!tempOTPData || tempOTPData.otpExpiry < new Date()) {
         throw new ApiError(400, "Invalid or expired OTP")
@@ -259,50 +260,48 @@ const verifyResetPasswordOTP = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid OTP")
     }
 
-    const user = await User.findOne({ email })
-    user.password = newPassword
-    user.save({ validateBeforeSave: false })
-    TempUser.findByIdAndDelete(tempOTPData._id)
+    const shop = await Shop.findOne({ email })
+    shop.password = newPassword
+    shop.save({ validateBeforeSave: false })
+    TempShop.findByIdAndDelete(tempOTPData._id)
     
     return res.status(200).json(
         new ApiResponse(
             200,
             { email },
-            "password chaged successfully"
+            "Password changed successfully"
         )
     )
 })
 
-const loginUser = asyncHandler(async (req, res) =>{
-    const {email, username, password} = req.body
-    //console.log(email);
+const loginShop = asyncHandler(async (req, res) =>{
+    const {email, shopName, password} = req.body
 
-    if (!username && !email) {
-        throw new ApiError(400, "username or email is required")
+    if (!shopName && !email) {
+        throw new ApiError(400, "Username or email is required")
     }
 
-    const user = await User.findOne({
-        $or: [{username}, {email}]
+    const shop = await Shop.findOne({
+        $or: [{shopName}, {email}]
     })
 
-    if (!user) {
-        throw new ApiError(404, "User does not exist")
+    if (!shop) {
+        throw new ApiError(404, "Pet shop does not exist")
     }
 
-   const isPasswordValid = await user.isPasswordCorrect(password)
+   const isPasswordValid = await shop.isPasswordCorrect(password)
 
    if (!isPasswordValid) {
-    throw new ApiError(401, "Invalid user credentials")
+    throw new ApiError(401, "Invalid credentials")
     }
 
-   const {accessToken, refreshToken} = await generateAccessAndRefereshTokens(user._id)
+   const {accessToken, refreshToken} = await generateAccessAndRefereshTokens(shop._id)
 
-    const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
+    const loggedInShop = await Shop.findById(shop._id).select("-password -refreshToken")
 
     const options = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
+        secure: true
     }
 
     return res
@@ -311,22 +310,23 @@ const loginUser = asyncHandler(async (req, res) =>{
     .cookie("refreshToken", refreshToken, options)
     .json(
         new ApiResponse(
-            200, 
+            200,
             {
-                user: loggedInUser, 
-                role: loggedInUser.role
+                shop: loggedInShop,
+                accessToken,
+                refreshToken
             },
-            "User logged In Successfully"
+            "Pet shop logged in successfully"
         )
     )
 })
 
-const logoutUser = asyncHandler(async(req, res) => {
-    await User.findByIdAndUpdate(
-        req.user._id,
+const logoutShop = asyncHandler(async (req, res) => {
+    await Shop.findByIdAndUpdate(
+        req.shop._id,
         {
             $unset: {
-                refreshToken: 1 // this removes the field from document
+                refreshToken: 1
             }
         },
         {
@@ -343,117 +343,99 @@ const logoutUser = asyncHandler(async(req, res) => {
     .status(200)
     .clearCookie("accessToken", options)
     .clearCookie("refreshToken", options)
-    .json(new ApiResponse(200, {}, "User logged Out"))
+    .json(new ApiResponse(200, {}, "Pet shop logged Out"))
 })
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-    const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
+    const { refreshToken } = req.cookies
 
-    if (!incomingRefreshToken) {
-        throw new ApiError(401, "unauthorized request")
+    if (!refreshToken) {
+        throw new ApiError(401, "Access denied, token missing")
     }
 
     try {
-        const decodedToken = jwt.verify(
-            incomingRefreshToken,
-            process.env.REFRESH_TOKEN_SECRET
-        )
-    
-        const user = await User.findById(decodedToken?._id)
-    
-        if (!user) {
+        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET)
+        const shop = await Shop.findById(decoded._id)
+
+        if (!shop) {
             throw new ApiError(401, "Invalid refresh token")
         }
-    
-        if (incomingRefreshToken !== user?.refreshToken) {
-            throw new ApiError(401, "Refresh token is expired or used")
-            
-        }
-    
+
         const options = {
             httpOnly: true,
             secure: true
         }
-    
-        const {accessToken, newRefreshToken} = await generateAccessAndRefereshTokens(user._id)
-    
+
+        const { accessToken, newRefreshToken } = await generateAccessAndRefereshTokens(shop._id)
+
         return res
         .status(200)
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", newRefreshToken, options)
         .json(
             new ApiResponse(
-                200, 
-                {accessToken, refreshToken: newRefreshToken},
+                200,
+                { accessToken, refreshToken: newRefreshToken },
                 "Access token refreshed"
             )
         )
     } catch (error) {
         throw new ApiError(401, error?.message || "Invalid refresh token")
     }
-
 })
 
-const getCurrentUser = asyncHandler(async(req, res) => {
+const getShopProfile = asyncHandler(async (req, res) => {
     return res
     .status(200)
-    .json(new ApiResponse(
-        200,
-        req.user,
-        "User fetched successfully"
-    ))
+    .json(new ApiResponse(200, req.shop, "Pet shop profile fetched successfully"))
 })
-
-const updateUserDetails = asyncHandler(async(req, res) => {
-    const {username, email, address, contact} = req.body
-
-    if (!username || !email) {
+const updateShopDetails = asyncHandler(async (req, res) => {
+    const { shopName, email, contact, address } = req.body
+    if (!shopName || !email || !contact || !address) {
         throw new ApiError(400, "All fields are required")
     }
 
-    // Check if username or email already exists for other users
-    const existingUser = await User.findOne({
+    const existingShop = await Shop.findOne({
         $and: [
-            { _id: { $ne: req.user?._id } }, // Exclude current user
+            { _id: { $ne: req.shop?._id } }, // Exclude current shop
             { $or: [
-                { username: username.toLowerCase() },
+                { shopName: shopName.toLowerCase() },
                 { email: email }
             ]}
         ]
-    });
+    })
 
-    if (existingUser) {
-        throw new ApiError(409, "Username or email already taken by another user")
+    if (existingShop) {
+        throw new ApiError(409, "Shop with email or shopName already exists")
     }
 
-    const user = await User.findByIdAndUpdate(
-        req.user?._id,
+    const shop = await Shop.findByIdAndUpdate(
+        req.shop?._id,
         {
             $set: {
-                username: username.toLowerCase(),
-                email: email,
-                address: address,
-                contact: contact
+                shopName,
+                email,
+                contact,
+                address
             }
         },
-        {new: true}
-        
+        { new: true }
     ).select("-password")
 
     return res
     .status(200)
-    .json(new ApiResponse(200, user, "Account details updated successfully"))
-});
+    .json(new ApiResponse(200, shop, "Pet shop details updated successfully"))
+})
 
 export {
-    registerUser,
+    registerShop,
     verifyOTP,
     resendOTP,
     forgotPassword,
     verifyResetPasswordOTP,
-    loginUser,
-    logoutUser,
+    loginShop,
+    logoutShop,
     refreshAccessToken,
-    getCurrentUser,
-    updateUserDetails
+    getShopProfile,
+    updateShopDetails
 }
