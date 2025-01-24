@@ -109,18 +109,7 @@ const tempShopSchema = new Schema({
     role: {
         type: String,
         enum: ["petShop"],
-        default: "petShop"
-    },
-    otp: {
-        type: String, 
-        required: true
-    },
-    otpExpiry: {
-        type: Date,
-        required: true,
-        default: () => new Date(Date.now() + 10 * 60 * 1000)
-    },
-    createdAt: {
+        default: "petShop",
         type: Date,
         default: Date.now,
         expires: 600 

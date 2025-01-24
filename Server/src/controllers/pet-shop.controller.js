@@ -57,10 +57,10 @@ const registerShop = asyncHandler(async (req, res) => {
         to: email,
         from: process.env.VERIFIED_SENDER_EMAIL,
         subject: "Pet Shop - Email Verification OTP",
-        text: `Welcome to Pet Shop! Your OTP for registration is: ${otp}. Valid for 10 minutes.`,
+        text: `Welcome Pet Shop! Your OTP for registration is: ${otp}. Valid for 10 minutes.`,
         html: `
             <h1>Pet Shop - Email Verification</h1>
-            <p>Welcome to Pet Shop!</p>
+            <p>Welcome Pet Shop!</p>
             <p>Your OTP for registration is: <strong>${otp}</strong></p>
             <p>This OTP is valid for 10 minutes.</p>
         `
