@@ -9,13 +9,7 @@ const adoptionCenterSchema = new Schema(
             required: true,
             unique: true,
             lowercase: true,
-            trim: true,
-            validate: {
-                validator: function (value) {
-                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value); // Basic email regex
-                },
-                message: 'AdoptionCenter:: {VALUE} is not a valid email!'
-            }
+            trim: true
         },
         password: {
             type: String,
@@ -38,6 +32,10 @@ const adoptionCenterSchema = new Schema(
         adoptionCenterDescription: {
             type: String,
             required: [true, "Adoption center description is required"]
+        },
+        imageUrl: {
+            type: String,
+            default: "https://res.cloudinary.com/dd2y1lxsf/image/upload/v1737739026/shop_default_axzvoi.jpg"
         },
         role: {
             type: String,
@@ -112,6 +110,10 @@ const tempAdoptionCenterSchema = new Schema({
     },
     adoptionCenterDescription: {
         type: String
+    },
+    photo: {
+        type: String,
+        default: "https://example.com/default-adoption-center-photo.jpg"
     },
     role: {
         type: String,

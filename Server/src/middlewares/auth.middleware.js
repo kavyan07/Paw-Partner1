@@ -17,7 +17,7 @@ const verifyJWT = asyncHandler(async (req, _, next) => {
             throw new ApiError(401, "jwt malformed");
         }
 
-        //console.log("Token:", token); // Log the token
+        console.log("Token:", token); // Log the token
 
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
@@ -36,12 +36,12 @@ const verifyJWT = asyncHandler(async (req, _, next) => {
 });
 
 const checkRole = (roles) => {
-    return (req, res, next) => {
+    return asyncHandler(async (req, _, next) => {
         if (!roles.includes(req.user.role)) {
-            throw new ApiError(403, "You are not authorized to perform this action");
+            throw new ApiError(403, "Forbidden");
         }
         next();
-    };
-};
+    });
+}
 
 export { verifyJWT, checkRole };

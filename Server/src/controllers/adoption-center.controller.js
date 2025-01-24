@@ -25,9 +25,9 @@ const generateAccessAndRefereshTokens = async(centerId) =>{
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
 const registerAdoptionCenter = asyncHandler(async (req, res) => {
-    const { email, password, adoptionCenterName, address, contact, role } = req.body
+    const { email, password, adoptionCenterName, address, contact, role, adoptionCenterDescription } = req.body
 
-    if ([email, password, adoptionCenterName, address, contact, role].some((field) => field?.trim() === "")) {
+    if ([email, password, adoptionCenterName, address, contact, role, adoptionCenterDescription].some((field) => field?.trim() === "")) {
         throw new ApiError(400, "All fields are required")
     }
 
@@ -49,7 +49,8 @@ const registerAdoptionCenter = asyncHandler(async (req, res) => {
         address,
         role,
         otp,
-        otpExpiry
+        otpExpiry,
+        adoptionCenterDescription
     })
 
     const msg = {
@@ -102,7 +103,8 @@ const verifyOTP = asyncHandler(async (req, res) => {
         password: tempCenter.password,
         contact: tempCenter.contact,
         address: tempCenter.address,
-        role: tempCenter.role
+        role: tempCenter.role,
+        adoptionCenterDescription: tempCenter.adoptionCenterDescription
     })
 
     // Delete temporary center
@@ -406,6 +408,8 @@ const updateAdoptionCenter = asyncHandler(async (req, res) => {
         throw new ApiError(400, "All fields are required")
     }
 
+    const AdoptionCenter = await AdoptionCenter.findById(req.center._id)
+
     const existingCenter = await AdoptionCenter.findOne({
         $and: [
             { _id: { $ne: req.center?._id } }, // Exclude current user
@@ -420,6 +424,14 @@ const updateAdoptionCenter = asyncHandler(async (req, res) => {
         throw new ApiError(409, "Adoption center with name or email already exists")
     }
 
+    let imageUrl = AdoptionCenter.imageUrl 
+    if(req.file) {
+        imageUrl = await uploadOnCloudinary(req.file.path);
+        if(imageUrl == AdoptionCenter.imageUrl) {
+            throw new ApiError(500, "Error uploading image to cloudinary")
+        }
+    }
+
     const center = await AdoptionCenter.findByIdAndUpdate(
         req.center?._id,
         {
@@ -427,7 +439,8 @@ const updateAdoptionCenter = asyncHandler(async (req, res) => {
                 adoptionCenterName,
                 email,
                 contact,
-                address
+                address,
+                imageUrl
             }
         },
         {new: true}

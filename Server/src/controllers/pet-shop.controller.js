@@ -394,7 +394,7 @@ const updateShopDetails = asyncHandler(async (req, res) => {
     if (!shopName || !email || !contact || !address) {
         throw new ApiError(400, "All fields are required")
     }
-
+    const petShop = await Shop.findById(req.shop._id)
     const existingShop = await Shop.findOne({
         $and: [
             { _id: { $ne: req.shop?._id } }, // Exclude current shop
@@ -409,6 +409,14 @@ const updateShopDetails = asyncHandler(async (req, res) => {
         throw new ApiError(409, "Shop with email or shopName already exists")
     }
 
+    let imageUrl = petShop.imageUrl 
+    if(req.file) {
+        imageUrl = await uploadOnCloudinary(req.file.path);
+        if(imageUrl == petShop.imageUrl) {
+            throw new ApiError(500, "Error uploading image to cloudinary")
+        }
+    }
+
     const shop = await Shop.findByIdAndUpdate(
         req.shop?._id,
         {
@@ -416,7 +424,8 @@ const updateShopDetails = asyncHandler(async (req, res) => {
                 shopName,
                 email,
                 contact,
-                address
+                address,
+                imageUrl
             }
         },
         { new: true }
