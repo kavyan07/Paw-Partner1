@@ -36,6 +36,7 @@ import ownedPetRouter from "./routes/owned-pet.routes.js"
 import adoptionCenterRouter from "./routes/adoption-center.routes.js"
 import adoptionCenterPetRouter from "./routes/center-pet.routes.js"
 import petShopRouter from "./routes/pet-shop.routes.js"
+import itemRouter from "./routes/item.routes.js"
 
 //Routes declaration
 app.use("/api/v1/users", userRouter)
@@ -43,5 +44,6 @@ app.use("/api/v1/owned-pets", ownedPetRouter)
 app.use("/api/v1/adoption-centers", adoptionCenterRouter)
 app.use("/api/v1/adoption-center-pets", adoptionCenterPetRouter)
 app.use("/api/v1/pet-shops", petShopRouter)
+app.use("/api/v1/items", itemRouter)
 
 export { app }
