@@ -38,8 +38,8 @@ const shopSchema = new Schema(
         },
         role: {
             type: String,
-            enum: ["customer", "shop owner", "veterinarian", "admin"],
-            default: "customer"
+            enum: ["petShop"],
+            default: "petShop"
         },
         refreshToken: {
             type: String
@@ -108,8 +108,8 @@ const tempShopSchema = new Schema({
     },
     role: {
         type: String,
-        enum: ["customer"],
-        default: "customer"
+        enum: ["petShop"],
+        default: "petShop"
     },
     otp: {
         type: String, 

@@ -41,8 +41,8 @@ const adoptionCenterSchema = new Schema(
         },
         role: {
             type: String,
-            enum: ["adoption center"],
-            default: "adoption center"
+            enum: ["adoptionCenter"],
+            default: "adoptionCenter"
         },
         refreshToken: {
             type: String
@@ -115,8 +115,8 @@ const tempAdoptionCenterSchema = new Schema({
     },
     role: {
         type: String,
-        enum: ["adoption center"],
-        default: "adoption center"
+        enum: ["adoptionCenter"],
+        default: "adoptionCenter"
     },
     otp: {
         type: String,

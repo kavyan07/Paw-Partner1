@@ -1,7 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { PawPrint, Heart, ShoppingBag, LogOut } from 'lucide-react';
+import { PawPrint, Heart, ShoppingBag, LogOut, Menu, X } from 'lucide-react';
 
 const HeaderContainer = styled.header`
   background-color: #fff;
@@ -42,7 +42,15 @@ const NavLinks = styled.div`
   gap: 2rem;
 
   @media (max-width: 768px) {
-    display: none;
+    display: ${props => props.isOpen ? 'flex' : 'none'};
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    background: white;
+    flex-direction: column;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   }
 `;
 
@@ -53,11 +61,13 @@ const NavLink = styled(Link)`
   color: #333;
   text-decoration: none;
   font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
   transition: all 0.3s ease;
 
   &:hover {
     color: #FF6B6B;
-    transform: translateY(-2px);
+    background: rgba(255, 107, 107, 0.1);
   }
 
   svg {
@@ -65,21 +75,52 @@ const NavLink = styled(Link)`
     height: 20px;
     color: #FF6B6B;
   }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    border-radius: 8px;
+    
+    &:hover {
+      background: rgba(255, 107, 107, 0.1);
+    }
+  }
 `;
 
 const MobileMenuButton = styled.button`
   display: none;
   background: none;
   border: none;
-  font-size: 1.5rem;
+  color: #FF6B6B;
   cursor: pointer;
+  padding: 0.5rem;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: #FF5252;
+  }
 
   @media (max-width: 768px) {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 `;
 
 const Header = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const isLoggedIn = !!localStorage.getItem('token');
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/signin');
+    setIsMenuOpen(false);
+  };
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
   return (
     <HeaderContainer>
       <Nav>
@@ -87,29 +128,37 @@ const Header = () => {
           <PawPrint />
           Paw-Partner
         </Logo>
-        <NavLinks>
-          <NavLink to="/pet-profile">
+        <NavLinks isOpen={isMenuOpen}>
+          <NavLink to="/pet-profile" onClick={() => setIsMenuOpen(false)}>
             <PawPrint />
             Pet Profile
           </NavLink>
-          <NavLink to="/adoption-center">
+          <NavLink to="/adoption-centers" onClick={() => setIsMenuOpen(false)}>
             <Heart />
-            Pet Adoption
+            Adoption Centers
           </NavLink>
-          <NavLink to="/pet-shop">
+          <NavLink to="/pet-shop" onClick={() => setIsMenuOpen(false)}>
             <ShoppingBag />
             Pet Shop
           </NavLink>
-          <NavLink to="/signin">
-            <LogOut />
-            Logout
-          </NavLink>
+          {isLoggedIn ? (
+            <NavLink to="#" onClick={handleLogout}>
+              <LogOut />
+              Logout
+            </NavLink>
+          ) : (
+            <NavLink to="/signin" onClick={() => setIsMenuOpen(false)}>
+              <LogOut />
+              Sign In
+            </NavLink>
+          )}
         </NavLinks>
-        <MobileMenuButton>☰</MobileMenuButton>
+        <MobileMenuButton onClick={toggleMenu}>
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </MobileMenuButton>
       </Nav>
     </HeaderContainer>
   );
 };
 
 export default Header;
-

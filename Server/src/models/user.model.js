@@ -38,7 +38,7 @@ const userSchema = new Schema(
         },
         role: {
             type: String,
-            enum: ["user", "shop owner", "adoption center", "admin"],
+            enum: ["user"],
             default: "user"
         },
         googleId: {
