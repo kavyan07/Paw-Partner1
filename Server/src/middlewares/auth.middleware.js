@@ -2,6 +2,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
+import { AdoptionCenter } from "../models/adoption-center.model.js";
+import { Shop } from "../models/pet-shop.model.js";
 
 const verifyJWT = asyncHandler(async (req, _, next) => {
     try {
@@ -21,13 +23,19 @@ const verifyJWT = asyncHandler(async (req, _, next) => {
 
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
+        // Check in all datasets for the user
         const user = await User.findById(decodedToken?._id).select("-password -refreshToken");
+        const adoptionCenter = await AdoptionCenter.findById(decodedToken?._id).select("-password -refreshToken");
+        const petShop = await Shop.findById(decodedToken?._id).select("-password -refreshToken");
+        
+        const authenticatedEntity = user || adoptionCenter || petShop;
 
-        if (!user) {
+        if (!authenticatedEntity) {
             throw new ApiError(401, "Invalid Access Token");
         }
 
-        req.user = user;
+        // Assign the found entity to req.user
+        req.user = authenticatedEntity;
         next();
     } catch (error) {
         console.error("JWT Error:", error); // Log the error
