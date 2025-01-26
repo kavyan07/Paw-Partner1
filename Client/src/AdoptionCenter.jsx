@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react"
 import styled from "styled-components"
 import { toast } from "react-toastify"
 import axios from "axios"
+import { useNavigate } from "react-router-dom" // Import useNavigate for navigation
 
 const PageContainer = styled.div`
-  padding-top: 80px; // To account for the fixed header
-  min-height: calc(100vh - 80px); // Adjust for footer height if needed
+  padding-top: 80px;
+  min-height: calc(100vh - 80px);
   background-color: #f8f9fa;
 `
 
@@ -17,7 +18,7 @@ const ListContainer = styled.div`
 
 const Title = styled.h1`
   font-size: 2.5rem;
-  color: #333;
+  color: #FF6B6B;
   margin-bottom: 30px;
   text-align: center;
 `
@@ -78,10 +79,25 @@ const ErrorMessage = styled.p`
   color: #FF6B6B;
 `
 
+const ViewMoreButton = styled.button`
+  background-color: #FF6B6B;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+
+  &:hover {
+    background-color: #e55d5d;
+  }
+`
+
 const AdoptionCenter = () => {
   const [centers, setCenters] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const navigate = useNavigate() // Initialize navigate for redirection
 
   useEffect(() => {
     fetchAdoptionCenters()
@@ -90,12 +106,14 @@ const AdoptionCenter = () => {
   const fetchAdoptionCenters = async () => {
     try {
       setLoading(true)
-      const response = await axios.get("/api/v1/adoption-centers", {
+      const response = await axios.get("http://localhost:8000/api/v1/adoption-centers", {
         withCredentials: true,
       })
+      console.log("API Response:", response)
       if (response.data.statusCode === 200 && Array.isArray(response.data.data)) {
         setCenters(response.data.data)
       } else {
+        console.error("Invalid data format:", response.data)
         throw new Error("Invalid data format")
       }
     } catch (error) {
@@ -105,6 +123,10 @@ const AdoptionCenter = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleViewMore = (centerId) => {
+    navigate(`/adoption-center-pets/${centerId}`) // Include centerId in the URL
   }
 
   if (loading) {
@@ -135,6 +157,7 @@ const AdoptionCenter = () => {
                 <CenterName>{center.adoptionCenterName}</CenterName>
                 <CenterAddress>{center.address}</CenterAddress>
                 <CenterDescription>{center.adoptionCenterDescription}</CenterDescription>
+                <ViewMoreButton onClick={() => handleViewMore(center._id)}>View More Pets</ViewMoreButton>
               </CenterInfo>
             </CenterCard>
           ))

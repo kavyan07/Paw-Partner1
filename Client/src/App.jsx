@@ -7,6 +7,7 @@ import PetProfile from './PetProfile';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import AdoptionCenter from "./AdoptionCenter";
+import AdoptionCenterPets from './AdoptionCenterPets';
 
 function AppContent() {
   const location = useLocation();
@@ -21,6 +22,7 @@ function AppContent() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/pet-profile" element={<PetProfile />} />
         <Route path="/adoption-centers" element={<AdoptionCenter />} />
+        <Route path="/adoption-center-pets" element={<AdoptionCenterPets />} />
         <Route path="/" element={<SignIn />} />
       </Routes>
       {!isAuthPage && <Footer />}
