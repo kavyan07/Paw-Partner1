@@ -21,6 +21,7 @@ function AppContent() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/pet-profile" element={<PetProfile />} />
         <Route path="/" element={<SignIn />} />
+        <Route path="/addional-info" element={<AdditionalInfo />} />
       </Routes>
       {!isAuthPage && <Footer />}
     </>

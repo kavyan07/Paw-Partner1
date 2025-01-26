@@ -26,15 +26,15 @@ const userSchema = new Schema(
         },
         password: {
             type: String,
-            required: [true, 'Password is required']
+            required: function() { return !this.googleId; }
         },
         address: {
             type: String,
-            required: true
+            required: function() { return !this.googleId; }
         },
         contact: {
             type: String,
-            required: true
+            required: function() { return !this.googleId; }
         },
         role: {
             type: String,
