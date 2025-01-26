@@ -57,9 +57,8 @@ const updateOwnedPet = asyncHandler(async (req, res) => {
         throw new ApiError(403, "Unauthorized");
     }
     
-    let imageUrl = pet.imageUrl 
     if(req.file) {
-        imageUrl = await uploadOnCloudinary(req.file.path);
+        const imageUrl = await uploadOnCloudinary(req.file.path);
         if(imageUrl == pet.imageUrl) {
             throw new ApiError(500, "Error uploading image to cloudinary")
         }

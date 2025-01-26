@@ -26,6 +26,7 @@ function AppContent() {
         <Route path="/adoption-center-pets/:centerId" element={<AdoptionCenterPets />} />
         <Route path="/pet-shops" element={<PetShop />} />
         <Route path="/" element={<SignIn />} />
+        <Route path="/addional-info" element={<AdditionalInfo />} />
       </Routes>
       {!isAuthPage && <Footer />}
     </>
