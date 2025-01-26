@@ -3,10 +3,8 @@ import { useParams } from "react-router-dom"
 import styled from "styled-components"
 import { toast } from "react-toastify"
 import axios from "axios"
-import Header from "./components/Header"
-import Footer from "./components/Footer"
 
-const MainContent = styled.main`
+const PageContainer = styled.div`
   padding-top: 80px;
   min-height: calc(100vh - 80px);
   background-color: #f8f9fa;
@@ -59,12 +57,12 @@ const PetName = styled.h3`
 `
 
 const PetDetails = styled.p`
-  margin: 0 0 10px 0;
+  margin: 0 0 5px 0;
   color: #666;
 `
 
 const PetDescription = styled.p`
-  margin: 0;
+  margin: 10px 0 0 0;
   color: #333;
   font-size: 0.9rem;
 `
@@ -89,13 +87,14 @@ const AdoptionCenterPets = () => {
 
   useEffect(() => {
     fetchAdoptionCenterPets()
-  }, []) //Removed unnecessary dependency
+  }, [])
 
   const fetchAdoptionCenterPets = async () => {
     try {
       setLoading(true)
       setError(null)
       console.log(`Fetching pets for center ID: ${centerId}`)
+
       const response = await axios.get(`http://localhost:8000/api/v1/adoption-center-pets/${centerId}`, {
         withCredentials: true,
         headers: {
@@ -103,8 +102,9 @@ const AdoptionCenterPets = () => {
           Accept: "application/json",
         },
       })
+
       console.log("Full API Response:", response)
-      if (response.data && Array.isArray(response.data.data)) {
+      if (response.data && response.data.statusCode === 200) {
         setPets(response.data.data)
         console.log("Pets data:", response.data.data)
       } else {
@@ -113,8 +113,6 @@ const AdoptionCenterPets = () => {
       }
     } catch (error) {
       console.error("Detailed error:", error)
-      console.error("Error response:", error.response)
-      console.error("Error message:", error.message)
       setError(error.response?.data?.message || "Failed to fetch pets. Please try again later.")
       toast.error("Failed to fetch pets")
     } finally {
@@ -122,27 +120,36 @@ const AdoptionCenterPets = () => {
     }
   }
 
-  const renderContent = () => {
-    if (loading) {
-      return <LoadingMessage>Loading pets...</LoadingMessage>
-    }
-
-    if (error) {
-      return <ErrorMessage>{error}</ErrorMessage>
-    }
-
+  if (loading) {
     return (
-      <>
-        <Title>Adoption Center Pets</Title>
+      <PageContainer>
+        <LoadingMessage>Loading pets...</LoadingMessage>
+      </PageContainer>
+    )
+  }
+
+  if (error) {
+    return (
+      <PageContainer>
+        <ErrorMessage>{error}</ErrorMessage>
+      </PageContainer>
+    )
+  }
+
+  return (
+    <PageContainer>
+      <ListContainer>
+        <Title>Adoption-Center Pets</Title>
         {pets.length > 0 ? (
           pets.map((pet) => (
             <PetCard key={pet._id}>
               <PetImage src={pet.imageUrl || "https://via.placeholder.com/150"} alt={pet.name} />
               <PetInfo>
                 <PetName>{pet.name}</PetName>
-                <PetDetails>
-                  {pet.type} • {pet.breed} • {pet.age} years old • {pet.gender}
-                </PetDetails>
+                <PetDetails>Type: {pet.type}</PetDetails>
+                <PetDetails>Breed: {pet.breed}</PetDetails>
+                <PetDetails>Age: {pet.age} years</PetDetails>
+                <PetDetails>Gender: {pet.gender}</PetDetails>
                 <PetDescription>{pet.description}</PetDescription>
               </PetInfo>
             </PetCard>
@@ -150,18 +157,8 @@ const AdoptionCenterPets = () => {
         ) : (
           <p>No pets found for this adoption center.</p>
         )}
-      </>
-    )
-  }
-
-  return (
-    <>
-      <Header />
-      <MainContent>
-        <ListContainer>{renderContent()}</ListContainer>
-      </MainContent>
-      <Footer />
-    </>
+      </ListContainer>
+    </PageContainer>
   )
 }
 
