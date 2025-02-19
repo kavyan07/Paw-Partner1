@@ -4,6 +4,7 @@ import Home from './Home';
 import SignIn from './SignIn';
 import SignUp from './SignUp';
 import PetProfile from './PetProfile';
+import AdditionalInfo from './AdditionalInfo';
 import AdoptionCenterPage from './AdoptionCenterPage';
 import Header from './components/Header';
 import Footer from './components/Footer';
