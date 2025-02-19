@@ -8,7 +8,10 @@ import AdditionalInfo from './AdditionalInfo';
 import AdoptionCenterPage from './AdoptionCenterPage';
 import Header from './components/Header';
 import Footer from './components/Footer';
-
+import AdoptionCenter from "./AdoptionCenter";
+import AdoptionCenterPets from './AdoptionCenterPets';
+import PetShop from './PetShop';
+import AdditionallInfo from './components/AdditionalInfo';
 function AppContent() {
   const location = useLocation();
   const isAuthPage = location.pathname === '/signin' || location.pathname === '/signup' || location.pathname === '/';
@@ -21,8 +24,11 @@ function AppContent() {
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/pet-profile" element={<PetProfile />} />
+        <Route path="/adoption-centers" element={<AdoptionCenter />} />
+        <Route path="/adoption-center-pets/:centerId" element={<AdoptionCenterPets />} />
+        <Route path="/pet-shops" element={<PetShop />} />
         <Route path="/" element={<SignIn />} />
-        <Route path="/addional-info" element={<AdditionalInfo />} />
+        <Route path="/addional-info" element={<AdditionallInfo />} />
       </Routes>
       {!isAuthPage && <Footer />}
     </>

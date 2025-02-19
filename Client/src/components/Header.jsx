@@ -137,7 +137,7 @@ const Header = () => {
             <Heart />
             Adoption Centers
           </NavLink>
-          <NavLink to="/pet-shop" onClick={() => setIsMenuOpen(false)}>
+          <NavLink to="/pet-shops" onClick={() => setIsMenuOpen(false)}>
             <ShoppingBag />
             Pet Shop
           </NavLink>

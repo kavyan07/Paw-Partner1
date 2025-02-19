@@ -40,6 +40,52 @@ const Title = styled.h1`
   margin-bottom: 20px;
 `;
 
+const GoogleButton = styled.button`
+  background: white;
+  color: #757575;
+  border: 1px solid #DADCE0;
+  border-radius: 12px;
+  padding: 15px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 20px;
+
+  &:hover {
+    background: #F8F9FA;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+  }
+
+  img {
+    width: 24px;
+    height: 24px;
+  }
+`;
+
+const OrDivider = styled.div`
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  color: #666;
+  font-size: 0.9rem;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #E0E0E0;
+    margin: 0 10px;
+  }
+`;
+
 const InputGroup = styled.div`
   position: relative;
 `;
@@ -47,7 +93,7 @@ const InputGroup = styled.div`
 const Input = styled.input`
   width: 100%;
   padding: 15px 15px 15px 45px;
-  border: 2px solid #E0E0E0;
+  border: 2px solid ${props => props.error ? '#FF4444' : '#E0E0E0'};
   border-radius: 12px;
   font-size: 1rem;
   transition: all 0.3s ease;
@@ -57,13 +103,6 @@ const Input = styled.input`
     outline: none;
     box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.1);
   }
-
-  ${props => props.error && `
-    border-color: #FF4444;
-    &:focus {
-      box-shadow: 0 0 0 4px rgba(255, 68, 68, 0.1);
-    }
-  `}
 `;
 
 const InputIcon = styled.div`
@@ -89,6 +128,9 @@ const PasswordToggle = styled.button`
   color: #666;
   cursor: pointer;
   padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &:hover {
     color: #FF6B6B;
@@ -111,70 +153,6 @@ const ErrorMessage = styled.span`
   svg {
     width: 16px;
     height: 16px;
-  }
-`;
-
-const PasswordStrength = styled.div`
-  margin-top: 5px;
-`;
-
-const StrengthBar = styled.div`
-  height: 4px;
-  background: #E0E0E0;
-  border-radius: 2px;
-  margin-top: 5px;
-  overflow: hidden;
-`;
-
-const StrengthIndicator = styled.div`
-  height: 100%;
-  width: ${props => props.strength}%;
-  background: ${props => {
-    if (props.strength <= 33) return '#FF4444';
-    if (props.strength <= 66) return '#FFA000';
-    return '#00C853';
-  }};
-  transition: all 0.3s ease;
-`;
-
-const StrengthText = styled.span`
-  font-size: 0.85rem;
-  color: ${props => {
-    if (props.strength <= 33) return '#FF4444';
-    if (props.strength <= 66) return '#FFA000';
-    return '#00C853';
-  }};
-`;
-
-const RoleButtonGroup = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-`;
-
-const RoleButton = styled.button`
-  background: ${props => props.active ? '#FF6B6B' : 'white'};
-  color: ${props => props.active ? 'white' : '#666'};
-  border: 2px solid ${props => props.active ? '#FF6B6B' : '#E0E0E0'};
-  padding: 12px;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-  
-  &:hover {
-    background: ${props => props.active ? '#FF5252' : '#F5F5F5'};
-    border-color: #FF6B6B;
   }
 `;
 
@@ -216,18 +194,35 @@ const Button = styled.button`
   }
 `;
 
-const ToggleButton = styled.button`
-  background: none;
-  border: none;
-  color: #FF6B6B;
-  font-size: 1rem;
-  font-weight: 500;
+const RoleButtonGroup = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+`;
+
+const RoleButton = styled.button`
+  background: ${props => props.active ? '#FF6B6B' : 'white'};
+  color: ${props => props.active ? 'white' : '#666'};
+  border: 2px solid ${props => props.active ? '#FF6B6B' : '#E0E0E0'};
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  margin-top: 20px;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  
+  svg {
+    width: 20px;
+    height: 20px;
+  }
   
   &:hover {
-    color: #FF5252;
-    text-decoration: underline;
+    background: ${props => props.active ? '#FF5252' : '#F5F5F5'};
+    border-color: #FF6B6B;
   }
 `;
 
@@ -258,6 +253,21 @@ const TermsCheckbox = styled.div`
   }
 `;
 
+const ToggleButton = styled.button`
+  background: none;
+  border: none;
+  color: #FF6B6B;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 20px;
+  
+  &:hover {
+    color: #FF5252;
+    text-decoration: underline;
+  }
+`;
+
 function SignUp() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -277,10 +287,27 @@ function SignUp() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
-    if (location.state?.selectedRole) {
-      setRole(location.state.selectedRole);
+    // Check for Google OAuth callback
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    const success = urlParams.get('success');
+    
+    if (success) {
+      navigate('/additional-info');
+    } else if (error) {
+      setErrors({ submit: "Google authentication failed. Please try again." });
     }
-  }, [location.state]);
+  }, [navigate]);
+
+  const handleGoogleLogin = async () => {
+    try {
+      window.location.href = 'http://localhost:8000/api/v1/users/auth/google';
+    } catch (error) {
+      setErrors({
+        submit: "Failed to initiate Google login. Please try again."
+      });
+    }
+  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -319,18 +346,6 @@ function SignUp() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const calculatePasswordStrength = (password) => {
-    if (!password) return 0;
-    
-    let strength = 0;
-    if (password.length >= 8) strength += 25;
-    if (/[A-Z]/.test(password)) strength += 25;
-    if (/[0-9]/.test(password)) strength += 25;
-    if (/[^A-Za-z0-9]/.test(password)) strength += 25;
-    
-    return strength;
-  };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -338,7 +353,6 @@ function SignUp() {
       [name]: value
     }));
     
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -425,13 +439,18 @@ function SignUp() {
     );
   }
 
-  const passwordStrength = calculatePasswordStrength(formData.password);
-
   return (
     <BackgroundWithImage>
       <Container>
         <Form onSubmit={handleSubmit}>
           <Title>Create Account</Title>
+
+          <GoogleButton type="button" onClick={handleGoogleLogin}>
+            <img src="https://www.google.com/favicon.ico" alt="Google" />
+            Continue with Google
+          </GoogleButton>
+
+          <OrDivider>or</OrDivider>
           
           <InputGroup>
             <InputIcon>
@@ -494,22 +513,11 @@ function SignUp() {
             >
               {showPassword ? <EyeOff /> : <Eye />}
             </PasswordToggle>
-            {errors.password ? (
+            {errors.password && (
               <ErrorMessage>
                 <XCircle />
                 {errors.password}
               </ErrorMessage>
-            ) : (
-              formData.password && (
-                <PasswordStrength>
-                  <StrengthText strength={passwordStrength}>
-                    Password strength: {passwordStrength <= 33 ? 'Weak' : passwordStrength <= 66 ? 'Medium' : 'Strong'}
-                  </StrengthText>
-                  <StrengthBar>
-                    <StrengthIndicator strength={passwordStrength} />
-                  </StrengthBar>
-                </PasswordStrength>
-              )
             )}
           </InputGroup>
 
@@ -621,4 +629,3 @@ function SignUp() {
 }
 
 export default SignUp;
-
