@@ -4,14 +4,12 @@ import Home from './Home';
 import SignIn from './SignIn';
 import SignUp from './SignUp';
 import PetProfile from './PetProfile';
-import AdditionalInfo from './AdditionalInfo';
-import AdoptionCenterPage from './AdoptionCenterPage';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import AdoptionCenter from "./AdoptionCenter";
 import AdoptionCenterPets from './AdoptionCenterPets';
 import PetShop from './PetShop';
-import AdditionallInfo from './components/AdditionalInfo';
+import AdditionalInfo from './components/AdditionalInfo';
 function AppContent() {
   const location = useLocation();
   const isAuthPage = location.pathname === '/signin' || location.pathname === '/signup' || location.pathname === '/';
@@ -28,7 +26,7 @@ function AppContent() {
         <Route path="/adoption-center-pets/:centerId" element={<AdoptionCenterPets />} />
         <Route path="/pet-shops" element={<PetShop />} />
         <Route path="/" element={<SignIn />} />
-        <Route path="/addional-info" element={<AdditionallInfo />} />
+        <Route path="/addional-info" element={<AdditionalInfo />} />
       </Routes>
       {!isAuthPage && <Footer />}
     </>
