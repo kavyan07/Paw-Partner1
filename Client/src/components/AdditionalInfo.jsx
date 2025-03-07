@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import styled from 'styled-components';
-import { Phone, MapPin, Loader2, XCircle } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Loader2, XCircle } from 'lucide-react';
 
 const Container = styled.div`
   min-height: 100vh;
@@ -56,6 +57,11 @@ const Input = styled.input`
     outline: none;
     box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.1);
   }
+`;
+
+const DisabledInput = styled(Input)`
+  background-color: #f5f5f5;
+  cursor: not-allowed;
 `;
 
 const InputIcon = styled.div`
@@ -124,12 +130,54 @@ const ErrorMessage = styled.span`
 `;
 
 function AdditionalInfo() {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [formData, setFormData] = useState({
+        username: '',
+        email: '',
         contact: '',
         address: ''
     });
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
+
+    useEffect(() => {
+        // Check for Google OAuth data in URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        const email = urlParams.get('email');
+        const name = urlParams.get('name');
+        
+        if (email) {
+            setFormData(prev => ({
+                ...prev,
+                email: email,
+                username: name || ''
+            }));
+        }
+        
+        // Try to get user data from session if available
+        const fetchUserData = async () => {
+            try {
+                const response = await axios.get(
+                    'http://localhost:8000/api/v1/users/me',
+                    { withCredentials: true }
+                );
+                
+                if (response.data.user) {
+                    const { email, name } = response.data.user;
+                    setFormData(prev => ({
+                        ...prev,
+                        email: email || prev.email,
+                        username: name || prev.username
+                    }));
+                }
+            } catch (error) {
+                console.log('No session data available');
+            }
+        };
+        
+        fetchUserData();
+    }, []);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -148,6 +196,10 @@ function AdditionalInfo() {
 
     const validateForm = () => {
         const newErrors = {};
+        
+        if (!formData.username.trim()) {
+            newErrors.username = "Username is required";
+        }
         
         if (!formData.contact.trim()) {
             newErrors.contact = "Contact number is required";
@@ -177,7 +229,7 @@ function AdditionalInfo() {
             );
 
             if (response.data.success) {
-                window.location.href = '/home';
+                navigate('/home');
             }
         } catch (error) {
             setErrors({
@@ -191,8 +243,42 @@ function AdditionalInfo() {
     return (
         <Container>
             <FormContainer>
-                <Title>Additional Information</Title>
+                <Title>Complete Your Profile</Title>
                 <Form onSubmit={handleSubmit}>
+                    <InputGroup>
+                        <InputIcon>
+                            <User />
+                        </InputIcon>
+                        <Input
+                            type="text"
+                            name="username"
+                            placeholder="Username"
+                            value={formData.username}
+                            onChange={handleInputChange}
+                            error={errors.username}
+                            required
+                        />
+                        {errors.username && (
+                            <ErrorMessage>
+                                <XCircle />
+                                {errors.username}
+                            </ErrorMessage>
+                        )}
+                    </InputGroup>
+
+                    <InputGroup>
+                        <InputIcon>
+                            <Mail />
+                        </InputIcon>
+                        <DisabledInput
+                            type="email"
+                            name="email"
+                            placeholder="Email"
+                            value={formData.email}
+                            disabled
+                        />
+                    </InputGroup>
+
                     <InputGroup>
                         <InputIcon>
                             <Phone />
@@ -243,7 +329,7 @@ function AdditionalInfo() {
                     )}
 
                     <Button type="submit" loading={loading} disabled={loading}>
-                        {loading ? <Loader2 /> : 'Save Information'}
+                        {loading ? <Loader2 /> : 'Complete Registration'}
                     </Button>
                 </Form>
             </FormContainer>

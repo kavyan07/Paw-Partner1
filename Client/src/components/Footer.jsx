@@ -1,12 +1,11 @@
-import React from 'react';
-import styled from 'styled-components';
-import { Facebook, Twitter, Instagram, YoutubeIcon as YouTube } from 'lucide-react';
+import styled from "styled-components"
+import { Facebook, Twitter, Instagram, Youtube } from "lucide-react"
 
 const FooterContainer = styled.footer`
   background-color: #232F3E;
   color: #fff;
   padding: 4rem 0 2rem;
-`;
+`
 
 const FooterContent = styled.div`
   max-width: 1200px;
@@ -23,12 +22,12 @@ const FooterContent = styled.div`
   @media (max-width: 576px) {
     grid-template-columns: 1fr;
   }
-`;
+`
 
 const FooterColumn = styled.div`
   display: flex;
   flex-direction: column;
-`;
+`
 
 const FooterTitle = styled.h3`
   font-size: 1.2rem;
@@ -44,7 +43,7 @@ const FooterTitle = styled.h3`
     background: #FF6B6B;
     margin-top: 10px;
   }
-`;
+`
 
 const FooterLink = styled.a`
   color: #DDD;
@@ -57,13 +56,13 @@ const FooterLink = styled.a`
     color: #FF6B6B;
     transform: translateX(5px);
   }
-`;
+`
 
 const SocialIcons = styled.div`
   display: flex;
   gap: 1rem;
   margin-top: 1rem;
-`;
+`
 
 const SocialIcon = styled.a`
   color: #DDD;
@@ -74,7 +73,7 @@ const SocialIcon = styled.a`
     color: #FF6B6B;
     transform: translateY(-3px);
   }
-`;
+`
 
 const Copyright = styled.p`
   text-align: center;
@@ -83,7 +82,7 @@ const Copyright = styled.p`
   border-top: 1px solid #444;
   font-size: 0.9rem;
   color: #AAA;
-`;
+`
 
 const Footer = () => {
   return (
@@ -113,19 +112,25 @@ const Footer = () => {
         <FooterColumn>
           <FooterTitle>Connect With Us</FooterTitle>
           <SocialIcons>
-            <SocialIcon href="#"><Facebook /></SocialIcon>
-            <SocialIcon href="#"><Twitter /></SocialIcon>
-            <SocialIcon href="#"><Instagram /></SocialIcon>
-            <SocialIcon href="#"><YouTube /></SocialIcon>
+            <SocialIcon href="#">
+              <Facebook />
+            </SocialIcon>
+            <SocialIcon href="#">
+              <Twitter />
+            </SocialIcon>
+            <SocialIcon href="#">
+              <Instagram />
+            </SocialIcon>
+            <SocialIcon href="#">
+              <Youtube />
+            </SocialIcon>
           </SocialIcons>
         </FooterColumn>
       </FooterContent>
-      <Copyright>
-        © {new Date().getFullYear()} Paw-Partner. All rights reserved.
-      </Copyright>
+      <Copyright>© {new Date().getFullYear()} Paw-Partner. All rights reserved.</Copyright>
     </FooterContainer>
-  );
-};
+  )
+}
 
-export default Footer;
+export default Footer
 
