@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
-import { PawPrint, Heart, ShoppingBag, LogOut, Menu, X } from 'lucide-react';
+"use client"
+
+import { useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import styled from "styled-components"
+import { PawPrint, Heart, ShoppingBag, LogOut, Menu, X } from "lucide-react"
 
 const HeaderContainer = styled.header`
   background-color: #fff;
@@ -11,7 +13,7 @@ const HeaderContainer = styled.header`
   width: 100%;
   top: 0;
   z-index: 1000;
-`;
+`
 
 const Nav = styled.nav`
   max-width: 1200px;
@@ -19,7 +21,7 @@ const Nav = styled.nav`
   display: flex;
   justify-content: space-between;
   align-items: center;
-`;
+`
 
 const Logo = styled(Link)`
   display: flex;
@@ -35,14 +37,14 @@ const Logo = styled(Link)`
     margin-right: 8px;
     color: #FF6B6B;
   }
-`;
+`
 
 const NavLinks = styled.div`
   display: flex;
   gap: 2rem;
 
   @media (max-width: 768px) {
-    display: ${props => props.isOpen ? 'flex' : 'none'};
+    display: ${(props) => (props.isOpen ? "flex" : "none")};
     position: fixed;
     top: 70px;
     left: 0;
@@ -52,7 +54,7 @@ const NavLinks = styled.div`
     padding: 2rem;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   }
-`;
+`
 
 const NavLink = styled(Link)`
   display: flex;
@@ -84,7 +86,7 @@ const NavLink = styled(Link)`
       background: rgba(255, 107, 107, 0.1);
     }
   }
-`;
+`
 
 const MobileMenuButton = styled.button`
   display: none;
@@ -104,22 +106,22 @@ const MobileMenuButton = styled.button`
     align-items: center;
     justify-content: center;
   }
-`;
+`
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const navigate = useNavigate();
-  const isLoggedIn = !!localStorage.getItem('token');
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const navigate = useNavigate()
+  const isLoggedIn = !!localStorage.getItem("token")
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/signin');
-    setIsMenuOpen(false);
-  };
+    localStorage.removeItem("token")
+    navigate("/signin")
+    setIsMenuOpen(false)
+  }
 
   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+    setIsMenuOpen(!isMenuOpen)
+  }
 
   return (
     <HeaderContainer>
@@ -153,12 +155,11 @@ const Header = () => {
             </NavLink>
           )}
         </NavLinks>
-        <MobileMenuButton onClick={toggleMenu}>
-          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </MobileMenuButton>
+        <MobileMenuButton onClick={toggleMenu}>{isMenuOpen ? <X size={24} /> : <Menu size={24} />}</MobileMenuButton>
       </Nav>
     </HeaderContainer>
-  );
-};
+  )
+}
 
-export default Header;
+export default Header
+

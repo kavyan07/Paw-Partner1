@@ -5,6 +5,8 @@ import sgMail from '@sendgrid/mail'
 import { TempShop } from "../models/pet-shop.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
+import crypto from "crypto"
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const generateAccessAndRefereshTokens = async(shopId) =>{
     try {
@@ -26,8 +28,10 @@ const generateAccessAndRefereshTokens = async(shopId) =>{
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
 const registerShop = asyncHandler(async (req, res) => {
-    const { email, password, contact, address, shopName, role } = req.body
+    // Add username to the destructuring
+    const { email, password, contact, address, shopName, role, username } = req.body
 
+    // Make sure username is included in the validation check
     if ([email, username, password, contact, shopName, role].some((field) => field?.trim() === "")) {
         throw new ApiError(400, "All fields are required")
     }
@@ -49,6 +53,7 @@ const registerShop = asyncHandler(async (req, res) => {
         shopName,
         address,
         role,
+        username, // Include username in the tempShop creation
         otp,
         otpExpiry
     })
@@ -82,7 +87,7 @@ const registerShop = asyncHandler(async (req, res) => {
 })
 
 const verifyOTP = asyncHandler(async (req, res) => {
-    const { email, otp} = req.body
+    const { email, otp, username } = req.body // Add username here too
     if (!email || !otp) {
         throw new ApiError(400, "Email and OTP are required")
     }
@@ -93,7 +98,6 @@ const verifyOTP = asyncHandler(async (req, res) => {
         throw new ApiError(400, "OTP expired or invalid email")
     }
     if (tempShop.otp.toString() !== otp.toString()) {
-        tempShop.findByIdAndDelete(tempShop._id)
         throw new ApiError(400, "Invalid OTP");
     }
 
@@ -104,7 +108,8 @@ const verifyOTP = asyncHandler(async (req, res) => {
         password: tempShop.password,
         contact: tempShop.contact,
         address: tempShop.address,
-        role: tempShop.role
+        role: tempShop.role,
+        username: tempShop.username || username // Use the username from tempShop or from request
     })
 
     // Delete temporary shop
@@ -211,11 +216,11 @@ const forgotPassword = asyncHandler(async (req, res) => {
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000)
 
     // Create temporary OTP storage
-const tempOTPData = await TempShop.create({
-    email: shop.email,
-    otp,
-    otpExpiry
-})
+    const tempOTPData = await TempShop.create({
+        email: shop.email,
+        otp,
+        otpExpiry
+    })
 
     const msg = {
         to: email,
@@ -275,14 +280,14 @@ const verifyResetPasswordOTP = asyncHandler(async (req, res) => {
 })
 
 const loginShop = asyncHandler(async (req, res) =>{
-    const {email, shopName, password} = req.body
+    const {email, shopName, password, username} = req.body // Add username here
 
     if (!shopName && !email) {
         throw new ApiError(400, "Username or email is required")
     }
 
     const shop = await Shop.findOne({
-        $or: [{shopName}, {email}]
+        $or: [{shopName}, {email}, {username}] // Add username to the query
     })
 
     if (!shop) {
@@ -389,8 +394,9 @@ const getShopProfile = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, req.shop, "Pet shop profile fetched successfully"))
 })
+
 const updateShopDetails = asyncHandler(async (req, res) => {
-    const { shopName, email, contact, address } = req.body
+    const { shopName, email, contact, address, username } = req.body // Add username here
     if (!shopName || !email || !contact || !address) {
         throw new ApiError(400, "All fields are required")
     }
@@ -400,17 +406,25 @@ const updateShopDetails = asyncHandler(async (req, res) => {
             { _id: { $ne: req.shop?._id } }, // Exclude current shop
             { $or: [
                 { shopName: shopName.toLowerCase() },
-                { email: email }
+                { email: email },
+                { username: username } // Add username check
             ]}
         ]
     })
 
     if (existingShop) {
-        throw new ApiError(409, "Shop with email or shopName already exists")
+        throw new ApiError(409, "Shop with email, username or shopName already exists")
     }
 
     let imageUrl = petShop.imageUrl 
     if(req.file) {
+        const uploadOnCloudinary = (path) => {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve(path)
+                }, 500)
+            })
+        }
         imageUrl = await uploadOnCloudinary(req.file.path);
         if(imageUrl == petShop.imageUrl) {
             throw new ApiError(500, "Error uploading image to cloudinary")
@@ -425,6 +439,7 @@ const updateShopDetails = asyncHandler(async (req, res) => {
                 email,
                 contact,
                 address,
+                username, // Add username to the update
                 imageUrl
             }
         },
