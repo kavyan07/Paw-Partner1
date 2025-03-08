@@ -142,43 +142,25 @@ function AdditionalInfo() {
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
-        // Check for Google OAuth data in URL params
-        const urlParams = new URLSearchParams(window.location.search);
-        const email = urlParams.get('email');
-        const name = urlParams.get('name');
-        
-        if (email) {
-            setFormData(prev => ({
-                ...prev,
-                email: email,
-                username: name || ''
-            }));
-        }
-        
-        // Try to get user data from session if available
-        const fetchUserData = async () => {
-            try {
-                const response = await axios.get(
-                    'http://localhost:8000/api/v1/users/me',
-                    { withCredentials: true }
-                );
-                
-                if (response.data.user) {
-                    const { email, name } = response.data.user;
-                    setFormData(prev => ({
-                        ...prev,
-                        email: email || prev.email,
-                        username: name || prev.username
-                    }));
+        axios.get('http://localhost:8000/api/v1/users/current-user', { withCredentials: true })
+            .then(response => {
+                if (response.data.success) {
+                    const user = response.data.data;
+                    setFormData({
+                        username: user.username,
+                        email: user.email,
+                        contact: user.contact || '',
+                        address: user.address || ''
+                    });
+                } else {
+                    navigate('/signup');
                 }
-            } catch (error) {
-                console.log('No session data available');
-            }
-        };
-        
-        fetchUserData();
+            })
+            .catch(error => {
+                console.error('Error fetching current user:', error);
+            });
     }, []);
-
+    
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -254,6 +236,7 @@ function AdditionalInfo() {
                             name="username"
                             placeholder="Username"
                             value={formData.username}
+                            maxLength={30}
                             onChange={handleInputChange}
                             error={errors.username}
                             required
@@ -288,6 +271,7 @@ function AdditionalInfo() {
                             name="contact"
                             placeholder="Contact Number"
                             value={formData.contact}
+                            pattern="[0-9]{10}"
                             onChange={handleInputChange}
                             error={errors.contact}
                             required
@@ -309,6 +293,7 @@ function AdditionalInfo() {
                             name="address"
                             placeholder="Address"
                             value={formData.address}
+                            maxLength={100}
                             onChange={handleInputChange}
                             error={errors.address}
                             required
@@ -337,4 +322,4 @@ function AdditionalInfo() {
     );
 }
 
-export default AdditionalInfo ;
+export default AdditionalInfo;

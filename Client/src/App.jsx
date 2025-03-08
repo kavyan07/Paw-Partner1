@@ -9,7 +9,7 @@ import Footer from './components/Footer';
 import AdoptionCenter from "./AdoptionCenter";
 import AdoptionCenterPets from './AdoptionCenterPets';
 import PetShop from './PetShop';
-import AdditionallInfo from './components/AdditionalInfo';
+import AdditionalInfo from './components/AdditionalInfo';
 import AdoptionCenterDashboard from './AdoptionCenterDashboard';
 import ForgotPassword from './Forgot-password';
 
@@ -30,7 +30,7 @@ function AppContent() {
         <Route path="/adoption-center-pets/:centerId" element={<AdoptionCenterPets />} />
         <Route path="/pet-shops" element={<PetShop />} />
         <Route path="/" element={<SignIn />} />
-        <Route path="/addional-info" element={<AdditionallInfo />} />
+        <Route path="/additional-info" element={<AdditionalInfo />} />
         <Route path="/adoption-center/dashboard" element={<AdoptionCenterDashboard />} />
         <Route path="/forgot-password" element={<ForgotPassword/>} />
         

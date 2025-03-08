@@ -395,11 +395,18 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 })
 
 const getCurrentUser = asyncHandler(async(req, res) => {
+    const user = req.user || req.cookies.user
+    user.password = undefined
+    user.refreshToken = undefined
+    if (!user) {
+        throw new ApiError(401, "unauthorized request")
+    }
+
     return res
     .status(200)
     .json(new ApiResponse(
         200,
-        req.user,
+        user,
         "User fetched successfully"
     ))
 })
@@ -407,8 +414,8 @@ const getCurrentUser = asyncHandler(async(req, res) => {
 const updateUserDetails = asyncHandler(async(req, res) => {
     const {username, email, address, contact} = req.body
 
-    if (!username || !email) {
-        throw new ApiError(400, "All fields are required")
+    if (!email) {
+        throw new ApiError(400, "email is required")
     }
 
     // Check if username or email already exists for other users
@@ -416,7 +423,6 @@ const updateUserDetails = asyncHandler(async(req, res) => {
         $and: [
             { _id: { $ne: req.user?._id } }, // Exclude current user
             { $or: [
-                { username: username.toLowerCase() },
                 { email: email }
             ]}
         ]
@@ -455,5 +461,6 @@ export {
     logoutUser,
     refreshAccessToken,
     getCurrentUser,
-    updateUserDetails
+    updateUserDetails,
+    generateAccessAndRefereshTokens
 }

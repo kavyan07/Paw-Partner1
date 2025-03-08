@@ -27,6 +27,14 @@ router.route("/resend-otp").post(resendOTP)
 //google auth
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
+    const options = {
+        httpOnly: true,
+        secure: true
+    };
+    console.log("Access Token:", req.accessToken);
+    console.log("Refresh Token:", req.user.refreshToken);
+    res.cookie('accessToken', req.accessToken, options);
+    res.cookie('refreshToken', req.user.refreshToken, options);
     res.redirect('http://localhost:5173/additional-info');
 });
 
