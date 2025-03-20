@@ -232,6 +232,9 @@ const SuccessIcon = styled.div`
 
 const API_BASE_URL = "http://localhost:8000/api/v1"
 
+// Configure axios with timeout
+axios.defaults.timeout = 15000 // 15 seconds timeout
+
 function ForgotPassword() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -251,6 +254,7 @@ function ForgotPassword() {
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const [resendTimer, setResendTimer] = useState(0)
+  const [retryCount, setRetryCount] = useState(0)
 
   // References for OTP inputs
   const otpRefs = useRef([])
@@ -299,7 +303,13 @@ function ForgotPassword() {
     try {
       const endpoint = `${getApiEndpoint()}/forgot-password`
 
-      const response = await axios.post(endpoint, { email })
+      const response = await axios.post(
+        endpoint,
+        { email },
+        {
+          timeout: 20000, // 20 seconds timeout for this specific request
+        },
+      )
 
       toast.success("OTP sent to your email")
       setStep(2)
@@ -307,11 +317,33 @@ function ForgotPassword() {
     } catch (error) {
       console.error("Error requesting OTP:", error)
 
-      const errorMessage =
-        error.response?.data?.message || error.response?.data?.error || "Failed to send OTP. Please try again."
+      // Handle connection reset errors specifically
+      if (error.code === "ECONNRESET" || error.message?.includes("ECONNRESET")) {
+        const errorMessage = "Connection to server was reset. Please try again."
+        setErrors({ submit: errorMessage })
+        toast.error(errorMessage)
 
-      setErrors({ submit: errorMessage })
-      toast.error(errorMessage)
+        // Retry logic for connection issues
+        if (retryCount < 2) {
+          setRetryCount((prev) => prev + 1)
+          toast.info("Retrying connection...")
+          setTimeout(() => {
+            handleRequestOTP(e)
+          }, 2000) // Wait 2 seconds before retrying
+          return
+        }
+      } else if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
+        setErrors({ submit: "Request timed out. Server might be busy, please try again." })
+        toast.error("Request timed out. Please try again.")
+      } else if (error.response) {
+        const errorMessage =
+          error.response?.data?.message || error.response?.data?.error || "Failed to send OTP. Please try again."
+        setErrors({ submit: errorMessage })
+        toast.error(errorMessage)
+      } else {
+        setErrors({ submit: "Network error. Please check your connection and try again." })
+        toast.error("Network error. Please try again.")
+      }
     } finally {
       setLoading(false)
     }
@@ -353,18 +385,33 @@ function ForgotPassword() {
     try {
       const endpoint = `${getApiEndpoint()}/forgot-password`
 
-      await axios.post(endpoint, { email })
+      await axios.post(
+        endpoint,
+        { email },
+        {
+          timeout: 20000, // 20 seconds timeout for this specific request
+        },
+      )
 
       toast.success("New OTP sent to your email")
       setResendTimer(60) // 60 seconds cooldown
     } catch (error) {
       console.error("Error resending OTP:", error)
 
-      const errorMessage =
-        error.response?.data?.message || error.response?.data?.error || "Failed to resend OTP. Please try again."
-
-      setErrors({ submit: errorMessage })
-      toast.error(errorMessage)
+      // Handle connection reset errors
+      if (error.code === "ECONNRESET" || error.message?.includes("ECONNRESET")) {
+        const errorMessage = "Connection to server was reset. Please try again."
+        setErrors({ submit: errorMessage })
+        toast.error(errorMessage)
+      } else if (error.response) {
+        const errorMessage =
+          error.response?.data?.message || error.response?.data?.error || "Failed to resend OTP. Please try again."
+        setErrors({ submit: errorMessage })
+        toast.error(errorMessage)
+      } else {
+        setErrors({ submit: "Network error. Please check your connection and try again." })
+        toast.error("Network error. Please try again.")
+      }
     } finally {
       setLoading(false)
     }
@@ -410,22 +457,37 @@ function ForgotPassword() {
     try {
       const endpoint = `${getApiEndpoint()}/verify-reset-password-otp`
 
-      await axios.post(endpoint, {
-        email,
-        otp: otp.join(""),
-        newPassword: password,
-      })
+      await axios.post(
+        endpoint,
+        {
+          email,
+          otp: otp.join(""),
+          newPassword: password,
+        },
+        {
+          timeout: 20000, // 20 seconds timeout for this specific request
+        },
+      )
 
       toast.success("Password reset successful!")
       setStep(4)
     } catch (error) {
       console.error("Error resetting password:", error)
 
-      const errorMessage =
-        error.response?.data?.message || error.response?.data?.error || "Failed to reset password. Please try again."
-
-      setErrors({ submit: errorMessage })
-      toast.error(errorMessage)
+      // Handle connection reset errors
+      if (error.code === "ECONNRESET" || error.message?.includes("ECONNRESET")) {
+        const errorMessage = "Connection to server was reset. Please try again."
+        setErrors({ submit: errorMessage })
+        toast.error(errorMessage)
+      } else if (error.response) {
+        const errorMessage =
+          error.response?.data?.message || error.response?.data?.error || "Failed to reset password. Please try again."
+        setErrors({ submit: errorMessage })
+        toast.error(errorMessage)
+      } else {
+        setErrors({ submit: "Network error. Please check your connection and try again." })
+        toast.error("Network error. Please try again.")
+      }
     } finally {
       setLoading(false)
     }

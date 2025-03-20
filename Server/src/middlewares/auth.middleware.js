@@ -7,7 +7,13 @@ import { Shop } from "../models/pet-shop.model.js";
 
 const verifyJWT = asyncHandler(async (req, _, next) => {
     try {
-        const token = req.cookies?.accessToken;
+        // Check for token in cookies first
+        let token = req.cookies?.accessToken;
+        
+        // If not in cookies, check Authorization header
+        if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+            token = req.headers.authorization.split(' ')[1];
+        }
 
         if (!token) {
             throw new ApiError(401, "Unauthorized request");
@@ -22,14 +28,14 @@ const verifyJWT = asyncHandler(async (req, _, next) => {
         console.log("Token:", token); // Log the token
 
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-
+        console.log("Decoded Token:", decodedToken); // Log the decoded token
         // Check in all datasets for the user
         const user = await User.findById(decodedToken?._id).select("-password -refreshToken");
         const adoptionCenter = await AdoptionCenter.findById(decodedToken?._id).select("-password -refreshToken");
         const petShop = await Shop.findById(decodedToken?._id).select("-password -refreshToken");
         
         const authenticatedEntity = user || adoptionCenter || petShop;
-
+            
         if (!authenticatedEntity) {
             throw new ApiError(401, "Invalid Access Token");
         }
@@ -38,7 +44,7 @@ const verifyJWT = asyncHandler(async (req, _, next) => {
         req.user = authenticatedEntity;
         next();
     } catch (error) {
-        console.error("JWT Error:", error); // Log the error
+        console.error("JWT Error:", jwt); // Log the error
         throw new ApiError(401, error?.message || "Invalid access token");
     }
 });

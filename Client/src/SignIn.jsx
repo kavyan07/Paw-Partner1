@@ -2,11 +2,12 @@ import { useState, useEffect } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import axios from "axios"
 import styled from "styled-components"
-import { Mail, Lock, Eye, EyeOff, XCircle, Loader2 } from "lucide-react"
+import { Mail, Lock, Eye, EyeOff, XCircle, Loader2, User } from "lucide-react"
 import { PawPrint, Store, Heart } from "lucide-react"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 
+// Existing styled components remain unchanged
 const BackgroundWithImage = styled.div`
   background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
               url('https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80');
@@ -290,6 +291,7 @@ function SignIn() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    username: "", // Added for petShop users
   })
   const [role, setRole] = useState("user")
   const [showPassword, setShowPassword] = useState(false)
@@ -347,6 +349,11 @@ function SignIn() {
       newErrors.password = "Password is required"
     }
 
+    // Validate username for petShop users
+    if (role === "petShop" && !formData.username.trim()) {
+      newErrors.username = "Username is required for Pet Shop accounts"
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -396,6 +403,11 @@ function SignIn() {
       const cleanedFormData = {
         email: formData.email.trim().toLowerCase(), // Normalize email
         password: formData.password, // Don't trim password as it might contain spaces
+      }
+
+      // Add username for pet shop users
+      if (role === "petShop" && formData.username) {
+        cleanedFormData.username = formData.username.trim()
       }
 
       // Get the appropriate login endpoint based on the selected role
@@ -485,6 +497,11 @@ function SignIn() {
         user = {
           email: cleanedFormData.email,
           role: role,
+        }
+        
+        // Add username for petShop role
+        if (role === "petShop" && cleanedFormData.username) {
+          user.username = cleanedFormData.username
         }
       }
 
@@ -615,6 +632,30 @@ function SignIn() {
               Adoption Center
             </RoleButton>
           </RoleButtonGroup>
+
+          {/* Only show username field for petShop role */}
+          {role === "petShop" && (
+            <InputGroup>
+              <InputIcon>
+                <User />
+              </InputIcon>
+              <Input
+                type="text"
+                name="username"
+                placeholder="Username"
+                value={formData.username}
+                onChange={handleInputChange}
+                error={errors.username}
+                required
+              />
+              {errors.username && (
+                <ErrorMessage>
+                  <XCircle />
+                  {errors.username}
+                </ErrorMessage>
+              )}
+            </InputGroup>
+          )}
 
           <InputGroup>
             <InputIcon>

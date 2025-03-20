@@ -177,6 +177,12 @@ const Input = styled.input`
     border-color: #FF6B6B;
     outline: none;
   }
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 `
 
 const Select = styled.select`
@@ -243,6 +249,10 @@ function PetProfile() {
     const { name, value, files } = e.target
     if (name === "image") {
       setFormData((prev) => ({ ...prev, image: files[0] }))
+    } else if (name === "age") {
+      // Ensure age is a positive number
+      const ageValue = Math.max(0, parseInt(value) || 0)
+      setFormData((prev) => ({ ...prev, age: ageValue.toString() }))
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }))
     }
@@ -422,6 +432,7 @@ function PetProfile() {
                 placeholder="Age"
                 value={formData.age}
                 onChange={handleInputChange}
+                min="0"
                 required
               />
               <Select name="gender" value={formData.gender} onChange={handleInputChange} required>
@@ -461,4 +472,3 @@ function PetProfile() {
 }
 
 export default PetProfile
-
